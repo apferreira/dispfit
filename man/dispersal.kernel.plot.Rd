@@ -27,9 +27,12 @@ dispersal.kernel.plot(
 Plots the distributions previously fitted by dispersal.kernel against the data density plot.
 }
 \examples{
-simulated.data.exponential <- rexp(100, rate = 0.01)
-data.test <- dispersal.kernel(simulated.data.exponential, distribution = "all", order.by = "AICc", extreme.values = FALSE)
-dispersal.kernel.plot(data.test, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE)
+sim <- rexp(100, rate = 0.01)
+test <- dispersal.kernel(sim)
+dispersal.kernel.plot(test)
+}
+\seealso{
+\code{\link{dispersal.kernel}}
 }
 \keyword{kernel}
 \keyword{plot}

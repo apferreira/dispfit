@@ -21,14 +21,21 @@ dispersal.kernel(
 \item{extreme.values}{Bolean (TRUE/FALSE) to whether “data” is to be fitted with extreme value distributions. Default is FALSE.}
 }
 \value{
-
+Returns a list with all maximum likelihood calculations for each selected distribution. Furthermore, two summary tables may be accessed
 }
 \description{
 Fits several pre-defined distributions to dispersal or movement data, computing several estimators: AIC, AICc, BIC, Chi-squared, and Kolgomorov-Smirnov. It also estimates the parameter(s) value(s) and SE of each distribution, as well as its Mean, Variance, Skewness, and Kurtosis.
 }
 \examples{
-simulated.data.exponential <- rexp(100, rate = 0.01)
-dispersal.kernel(simulated.data.exponential, distribution = "all", order.by = "AICc", extreme.values = FALSE)
+## simulate data from exponential distribution
+sim <- rexp(100, rate = 0.01)
+## run dispersal.kernel function
+fit <- dispersal.kernel(sim)
+## display table
+fit$distribution.selection
+}
+\seealso{
+\code{\link{dispersal.kernel.plot}}
 }
 \keyword{dispersal}
 \keyword{distribution}

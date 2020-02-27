@@ -5,14 +5,19 @@
 #' @param distribution A character string naming the distributions to fit. By default “all” distributions are selected, but they may be selected manually by name. See Details.
 #' @param order.by A character string giving the estimator by which the distributions are to be ordered in the output table. The default is “AICc”, but one can also choose “AIC” or “BIC”.
 #' @param extreme.values Bolean (TRUE/FALSE) to whether “data” is to be fitted with extreme value distributions. Default is FALSE.
-#' @return This is a test, where does it appear?
+#' @details
+#' @return Returns a list with all maximum likelihood calculations for each selected distribution. Furthermore, two summary tables may be accessed
+#' @seealso \code{\link{dispersal.kernel.plot}}
 #' @keywords dispersal kernel distribution
-#' @import msm
-#' @import numDeriv
+#' @import msm numDeriv stats
 #' @export
 #' @examples
-#' simulated.data.exponential <- rexp(100, rate = 0.01)
-#' dispersal.kernel(simulated.data.exponential, distribution = "all", order.by = "AICc", extreme.values = FALSE)
+#' ## simulate data from exponential distribution
+#' sim <- rexp(100, rate = 0.01)
+#' ## run dispersal.kernel function
+#' fit <- dispersal.kernel(sim)
+#' ## display table
+#' fit$distribution.selection
 
 dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", extreme.values = FALSE) {
   # require("msm")

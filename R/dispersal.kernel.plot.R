@@ -6,14 +6,14 @@
 #' @param criteria.dif A numeric value used when “AIC”, “AICc”, or "BIC" are also selected in fit.criteria. Its value refers to the estimator difference to the top distribution. Only distributions with their estimator difference to the top model falling below this value will be plotted. The default is 2.
 #' @param envelopes A boolean (TRUE/FALSE) value choosing whether to plot the confidence envelopes associated with each distribution. Default is TRUE.
 #' @param plot.data A boolean (TRUE/FALSE) value selecting to plot the density of the data.
+#' @seealso \code{\link{dispersal.kernel}}
 #' @keywords kernel plot
-#' @import ggplot2
-#' @import reshape2
+#' @import ggplot2 reshape2 graphics
 #' @export
 #' @examples
-#' simulated.data.exponential <- rexp(100, rate = 0.01)
-#' data.test <- dispersal.kernel(simulated.data.exponential, distribution = "all", order.by = "AICc", extreme.values = FALSE)
-#' dispersal.kernel.plot(data.test, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE)
+#' sim <- rexp(100, rate = 0.01)
+#' test <- dispersal.kernel(sim)
+#' dispersal.kernel.plot(test)
 
 dispersal.kernel.plot <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE) {
   # require("ggplot2")
