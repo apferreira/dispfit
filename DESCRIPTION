@@ -6,7 +6,7 @@ Author: António Proença-Ferreira
 Maintainer: António Proença-Ferreira <antoniomiguelpferreira@gmail.com>
 Description: Fits several pre-defined distributions to dispersal or movement data, computing several estimators: AIC, AICc, BIC, Chi-squared, and Kolgomorov-Smirnov.
     It also estimates the parameter(s) value(s) and SE of each distribution, as well as its Mean, Variance, Skewness, and Kurtosis.
-License: CC BY-SA 4.0
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: msm, numDeriv, ggplot2, reshape2
