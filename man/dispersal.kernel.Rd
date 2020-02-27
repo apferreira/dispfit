@@ -2,7 +2,7 @@
 % Please edit documentation in R/dispersal.kernel.R
 \name{dispersal.kernel}
 \alias{dispersal.kernel}
-\title{Dispersal kernels for movement data}
+\title{Dispersal kernels for dispersal data}
 \usage{
 dispersal.kernel(
   data,
@@ -14,23 +14,38 @@ dispersal.kernel(
 \arguments{
 \item{data}{A numeric vector of distances.}
 
-\item{distribution}{A character string naming the distributions to fit. By default “all” distributions are selected, but they may be selected manually by name. See Details.}
+\item{distribution}{A character string naming the distributions to fit. By default “all” distributions are selected,
+but they may be selected manually by name. See Details.}
 
-\item{order.by}{A character string giving the estimator by which the distributions are to be ordered in the output table. The default is “AICc”, but one can also choose “AIC” or “BIC”.}
+\item{order.by}{A character string giving the estimator by which the distributions are to be ordered in the output table.
+The default is “AICc”, but one can also choose “AIC” or “BIC”.}
 
 \item{extreme.values}{Bolean (TRUE/FALSE) to whether “data” is to be fitted with extreme value distributions. Default is FALSE.}
 }
 \value{
-Returns a list with all maximum likelihood calculations for each selected distribution. Furthermore, two summary tables may be accessed
+Returns a list with all maximum likelihood calculations for each selected distribution.
+Furthermore, two summary tables may be accessed
+\tabular{ll}{
+  \code{distribution.selection} \tab A table listing the fitted distributions. \cr
+  \code{distribution.parameters} \tab A table with the estimated parameters and moments for each fitted distribution. \cr
+}
 }
 \description{
-Fits several pre-defined distributions to dispersal or movement data, computing several estimators: AIC, AICc, BIC, Chi-squared, and Kolgomorov-Smirnov. It also estimates the parameter(s) value(s) and SE of each distribution, as well as its Mean, Variance, Skewness, and Kurtosis.
+Fits several pre-defined distributions to dispersal or movement data, computing several estimators: AIC, AICc, BIC,
+Chi-squared, and Kolgomorov-Smirnov. It also estimates the parameter(s) value(s) and SE of each distribution,
+as well as its Mean, Variance, Skewness, and Kurtosis.
+}
+\details{
+This function fits one or more dispersal kernels with 1-2 parameters, by estimating the
+distribution of kernel parameters (θ∈R) maximizing the likelihood function
 }
 \examples{
 ## simulate data from exponential distribution
 sim <- rexp(100, rate = 0.01)
+
 ## run dispersal.kernel function
 fit <- dispersal.kernel(sim)
+
 ## display table
 fit$distribution.selection
 }

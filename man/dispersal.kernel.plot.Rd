@@ -2,7 +2,7 @@
 % Please edit documentation in R/dispersal.kernel.plot.R
 \name{dispersal.kernel.plot}
 \alias{dispersal.kernel.plot}
-\title{Plots from dispersal kernel fit for movement data}
+\title{Plots from dispersal kernel fit for dispersal data}
 \usage{
 dispersal.kernel.plot(
   data,
@@ -27,8 +27,11 @@ dispersal.kernel.plot(
 Plots the distributions previously fitted by dispersal.kernel against the data density plot.
 }
 \examples{
+
 sim <- rexp(100, rate = 0.01)
+
 test <- dispersal.kernel(sim)
+
 dispersal.kernel.plot(test)
 }
 \seealso{
