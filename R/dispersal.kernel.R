@@ -709,17 +709,6 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       mean.stderr.logistic <- msm::deltamethod(~ x1 * ((gamma(3/x2) * gamma(1-(3/x2))) / (gamma(2/x2) * gamma(1-(2/x2))) ), mean = dist.logistic.opt$par, cov = solve(numDeriv::hessian(log.dist.logistic, x=dist.logistic.opt$par, r=data)) )
       # variance
       variance.logistic <- "in progress"
-      # 1, 1/b, 1 + 1/b, -a^(-b) r^b
-      # x <- 1000
-      # par.2.logistic*x*hypergeo::hypergeo_buhring(1, 1/par.2.logistic, 1 + 1/par.2.logistic, -par.1.logistic^(-par.2.logistic)* x^par.2.logistic)
-      #
-      # ((x^2)/2)*(par.1.logistic^-par.2.logistic)*hypergeo::hypergeo_buhring(1, 2/par.2.logistic, (par.2.logistic+2)/par.2.logistic, -par.1.logistic^(-par.2.logistic) * x^par.2.logistic)
-      #
-      #
-      #
-      #
-      # buhring_eqn11
-      # hypergeo
       variance.stderr.logistic <-"in progress"
       # skewness
       skewness.logistic <- "in progress"
