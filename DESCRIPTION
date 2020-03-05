@@ -2,7 +2,7 @@ Package: dispfit
 Type: Package
 Title: Fit Distributions to Dispersal Data
 Version: 0.1.0
-Author: António Proença-Ferreira
+Author: António Proença-Ferreira [aut, cre, cph], Luís Borda-de-Água [aut, ctb, cph], Francisco Moreira [aut, cph], António Mira [aut, cph], Ricardo Pita [aut, cph]
 Maintainer: António Proença-Ferreira <antoniomiguelpferreira@gmail.com>
 Description: Fits several pre-defined distributions to dispersal or movement data, computing several estimators: AIC, AICc, BIC, Chi-squared, and Kolgomorov-Smirnov.
     It also estimates the parameter(s) value(s) and SE of each distribution, as well as its Mean, Variance, Skewness, and Kurtosis.
