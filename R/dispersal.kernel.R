@@ -45,14 +45,20 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
                                                                  "Variance", "Variance SE",
                                                                  "Skewness", "Skewness SE",
                                                                  "Kurtosis", "Kurtosis SE"))
+
+  ## Saving data to final object - to be used in kernel plot function
   kernel.fit$data <- data
-  res.hist <- hist(data, plot = F)
-  cumulative.data <- c(res.hist$counts[1])
-  for (i in 1+seq_along(res.hist$counts)) {
-    cumulative.data[i] <- cumulative.data[i-1] + res.hist$counts[i]
-  }
-  cumulative.data <- cumulative.data/sum(res.hist$counts)
-  cumulative.data <- cumulative.data[!is.na(cumulative.data)]
+  ## Used in Chi-Squared calculations
+  chi.res.hist <- hist(data, plot = F, breaks = "FD")
+  ## Used in Kolmogorov-Smirnov calculations
+  ks.res.hist <- hist(data, plot = F, breaks = length(data))
+  # res.hist <- hist(data, plot = F, breaks = length(data))
+  # cumulative.data <- c(res.hist$counts[1])
+  # for (i in 1+seq_along(res.hist$counts)) {
+  #   cumulative.data[i] <- cumulative.data[i-1] + res.hist$counts[i]
+  # }
+  # cumulative.data <- cumulative.data/sum(res.hist$counts)
+  # cumulative.data <- cumulative.data[!is.na(cumulative.data)]
 
   if (isFALSE(extreme.values)) {
     ### 1 ### GAUSSIAN / RAYLEIGH ### DONE!
@@ -85,21 +91,31 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       aicc.rayleigh <- aic.rayleigh + (2 * length(dist.rayleigh.opt$par)^2 + 2 * length(dist.rayleigh.opt$par))/(length(data) - length(dist.rayleigh.opt$par) - 1 )
       # BIC
       bic.rayleigh <-  2 * dist.rayleigh.opt$value + length(dist.rayleigh.opt$par)*log(length(data))
-      # Chi-squared
-      expected.values.rayleigh <- dist.rayleigh(res.hist$mids,dist.rayleigh.opt$par)*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.rayleigh <- sum((res.hist$counts - expected.values.rayleigh)^2 / expected.values.rayleigh)
-      chi.squared.pvalue.rayleigh <- 1 - pchisq(chi.squared.statistic.rayleigh, length(res.hist$counts)-2)
-      # Kolmogorov-Smirnov
-      cumulative.expected.values.rayleigh <- c(expected.values.rayleigh[1])
-      for (i in 1+seq_along(expected.values.rayleigh)) {
-        cumulative.expected.values.rayleigh[i] <- cumulative.expected.values.rayleigh[i-1] + expected.values.rayleigh[i]
+      # Chi-squared - from Press 1992, pp. 621-622
+      chi.expected.values.rayleigh <- dist.rayleigh(chi.res.hist$mids,dist.rayleigh.opt$par)*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.rayleigh <- sum((chi.res.hist$counts - chi.expected.values.rayleigh)^2 / chi.expected.values.rayleigh)
+      chi.squared.pvalue.rayleigh <- 1 - pchisq(chi.squared.statistic.rayleigh, length(chi.res.hist$counts)-2)
+      # Kolmogorov-Smirnov - from Sokal 1995, pp. 223-224
+      ks.expected.values.rayleigh <- dist.rayleigh(ks.res.hist$mids,dist.rayleigh.opt$par)*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.rayleigh <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.rayleigh <- c(simul.rayleigh, rep(ks.res.hist$mids[i], round(ks.expected.values.rayleigh[i], 0)))
       }
-      cumulative.expected.values.rayleigh <- cumulative.expected.values.rayleigh/sum(expected.values.rayleigh)
-      cumulative.expected.values.rayleigh <- cumulative.expected.values.rayleigh[!is.na(cumulative.expected.values.rayleigh)]
-      g.max.rayleigh <- max(abs(cumulative.data - cumulative.expected.values.rayleigh))
-      if (g.max.rayleigh < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.rayleigh <- "Accept"
-      } else {KS.rayleigh <- "Reject"}
+      ks.rayleigh <- ks.test(data, simul.rayleigh)
+      ks.d.rayleigh <- as.numeric(ks.rayleigh$statistic)
+      ks.p.rayleigh <- as.numeric(ks.rayleigh$p.value)
+
+      # cumulative.expected.values.rayleigh <- c(expected.values.rayleigh[1])
+      # for (i in 1+seq_along(expected.values.rayleigh)) {
+      #   cumulative.expected.values.rayleigh[i] <- cumulative.expected.values.rayleigh[i-1] + expected.values.rayleigh[i]
+      # }
+      # cumulative.expected.values.rayleigh <- cumulative.expected.values.rayleigh/sum(expected.values.rayleigh)
+      # cumulative.expected.values.rayleigh <- cumulative.expected.values.rayleigh[!is.na(cumulative.expected.values.rayleigh)]
+      # g.max.rayleigh <- max(abs(cumulative.data - cumulative.expected.values.rayleigh))
+      # if (g.max.rayleigh < (sqrt(-log(0.05/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.rayleigh <- "Accept"
+      # } else {KS.rayleigh <- "Reject"}
+
       # parameter estimate
       par.1.rayleigh <- dist.rayleigh.opt$par
       par.2.rayleigh <- NA
@@ -129,7 +145,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       kurtosis.stderr.rayleigh <- msm::deltamethod(~ (2*x1^4) / (( (4-pi) * (x1^2) )/4)^(2), mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
       # output
       rayleigh.values <- data.frame(aic.rayleigh, aicc.rayleigh, bic.rayleigh,
-                                    chi.squared.statistic.rayleigh, chi.squared.pvalue.rayleigh,g.max.rayleigh, KS.rayleigh,
+                                    chi.squared.statistic.rayleigh, chi.squared.pvalue.rayleigh, ks.d.rayleigh, ks.p.rayleigh,
                                     par.1.rayleigh, par.1.se.rayleigh, par.2.rayleigh, par.2.se.rayleigh,
                                     mean.rayleigh, mean.stderr.rayleigh, variance.rayleigh, variance.stderr.rayleigh,
                                     skewness.rayleigh, skewness.stderr.rayleigh, kurtosis.rayleigh, kurtosis.stderr.rayleigh)
@@ -166,20 +182,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.exponential <-  2 * dist.exponential.opt$value + length(dist.exponential.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.exponential <- dist.exponential(res.hist$mids, dist.exponential.opt$par)*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.exponential <- sum((res.hist$counts - expected.values.exponential)^2 / expected.values.exponential)
-      chi.squared.pvalue.exponential <- 1-pchisq(chi.squared.statistic.exponential, length(res.hist$counts)-2)
+      chi.expected.values.exponential <- dist.exponential(chi.res.hist$mids, dist.exponential.opt$par)*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.exponential <- sum((chi.res.hist$counts - chi.expected.values.exponential)^2 / chi.expected.values.exponential)
+      chi.squared.pvalue.exponential <- 1-pchisq(chi.squared.statistic.exponential, length(chi.res.hist$counts)-2)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.exponential <- c(expected.values.exponential[1])
-      for (i in 1+seq_along(expected.values.exponential)) {
-        cumulative.expected.values.exponential[i] <- cumulative.expected.values.exponential[i-1] + expected.values.exponential[i]
+      ks.expected.values.exponential <- dist.exponential(ks.res.hist$mids, dist.exponential.opt$par)*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.exponential <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.exponential <- c(simul.exponential, rep(ks.res.hist$mids[i], round(ks.expected.values.exponential[i], 0)))
       }
-      cumulative.expected.values.exponential <- cumulative.expected.values.exponential/sum(expected.values.exponential)
-      cumulative.expected.values.exponential <- cumulative.expected.values.exponential[!is.na(cumulative.expected.values.exponential)]
-      g.max.exponential <- max(abs(cumulative.data - cumulative.expected.values.exponential))
-      if (g.max.exponential < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.exponential <- "Accept"
-      } else {KS.exponential <- "Reject"}
+      ks.exponential <- ks.test(data, simul.exponential)
+      g.max.exponential <- as.numeric(ks.exponential$statistic)
+      KS.exponential <- as.numeric(ks.exponential$p.value)
+
+      # cumulative.expected.values.exponential <- c(expected.values.exponential[1])
+      # for (i in 1+seq_along(expected.values.exponential)) {
+      #   cumulative.expected.values.exponential[i] <- cumulative.expected.values.exponential[i-1] + expected.values.exponential[i]
+      # }
+      # cumulative.expected.values.exponential <- cumulative.expected.values.exponential/sum(expected.values.exponential)
+      # cumulative.expected.values.exponential <- cumulative.expected.values.exponential[!is.na(cumulative.expected.values.exponential)]
+      # g.max.exponential <- max(abs(cumulative.data - cumulative.expected.values.exponential))
+      # if (g.max.exponential < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.exponential <- "Accept"
+      # } else {KS.exponential <- "Reject"}
       # parameter estimate
       par.1.exponential <- dist.exponential.opt$par
       par.2.exponential <- NA
@@ -281,20 +306,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.generalnormal <-  2 * dist.generalnormal.opt$value + length(dist.generalnormal.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.generalnormal <- dist.generalnormal(res.hist$mids, dist.generalnormal.opt$par[1], dist.generalnormal.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.generalnormal <- sum((res.hist$counts - expected.values.generalnormal)^2 / expected.values.generalnormal)
-      chi.squared.pvalue.generalnormal <- 1-pchisq(chi.squared.statistic.generalnormal, length(res.hist$counts)-3)
+      chi.expected.values.generalnormal <- dist.generalnormal(chi.res.hist$mids, dist.generalnormal.opt$par[1], dist.generalnormal.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.generalnormal <- sum((chi.res.hist$counts - chi.expected.values.generalnormal)^2 / chi.expected.values.generalnormal)
+      chi.squared.pvalue.generalnormal <- 1-pchisq(chi.squared.statistic.generalnormal, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.generalnormal <- c(expected.values.generalnormal[1])
-      for (i in 1+seq_along(expected.values.generalnormal)) {
-        cumulative.expected.values.generalnormal[i] <- cumulative.expected.values.generalnormal[i-1] + expected.values.generalnormal[i]
+      ks.expected.values.generalnormal <- dist.generalnormal(ks.res.hist$mids, dist.generalnormal.opt$par[1], dist.generalnormal.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.generalnormal <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.generalnormal <- c(simul.generalnormal, rep(ks.res.hist$mids[i], round(ks.expected.values.generalnormal[i], 0)))
       }
-      cumulative.expected.values.generalnormal <- cumulative.expected.values.generalnormal/sum(expected.values.generalnormal)
-      cumulative.expected.values.generalnormal <- cumulative.expected.values.generalnormal[!is.na(cumulative.expected.values.generalnormal)]
-      g.max.generalnormal <- max(abs(cumulative.data - cumulative.expected.values.generalnormal))
-      if (g.max.generalnormal < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.generalnormal <- "Accept"
-      } else {KS.generalnormal <- "Reject"}
+      ks.generalnormal <- ks.test(data, simul.generalnormal)
+      g.max.generalnormal <- as.numeric(ks.generalnormal$statistic)
+      KS.generalnormal <- as.numeric(ks.generalnormal$p.value)
+
+      # cumulative.expected.values.generalnormal <- c(expected.values.generalnormal[1])
+      # for (i in 1+seq_along(expected.values.generalnormal)) {
+      #   cumulative.expected.values.generalnormal[i] <- cumulative.expected.values.generalnormal[i-1] + expected.values.generalnormal[i]
+      # }
+      # cumulative.expected.values.generalnormal <- cumulative.expected.values.generalnormal/sum(expected.values.generalnormal)
+      # cumulative.expected.values.generalnormal <- cumulative.expected.values.generalnormal[!is.na(cumulative.expected.values.generalnormal)]
+      # g.max.generalnormal <- max(abs(cumulative.data - cumulative.expected.values.generalnormal))
+      # if (g.max.generalnormal < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.generalnormal <- "Accept"
+      # } else {KS.generalnormal <- "Reject"}
       # mean dispersal distance
       # mean.generalnormal <- dist.generalnormal.opt$par[1] * (gamma(3/dist.generalnormal.opt$par[2])/gamma(2/dist.generalnormal.opt$par[2]))
       # parameter estimate
@@ -402,20 +436,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.2dt <-  2 * dist.2dt.opt$value + length(dist.2dt.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.2dt <- dist.2dt(res.hist$mids, dist.2dt.opt$par[1], dist.2dt.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.2dt <- sum((res.hist$counts - expected.values.2dt)^2 / expected.values.2dt)
-      chi.squared.pvalue.2dt <- 1-pchisq(chi.squared.statistic.2dt, length(res.hist$counts)-3)
+      chi.expected.values.2dt <- dist.2dt(chi.res.hist$mids, dist.2dt.opt$par[1], dist.2dt.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.2dt <- sum((chi.res.hist$counts - chi.expected.values.2dt)^2 / chi.expected.values.2dt)
+      chi.squared.pvalue.2dt <- 1-pchisq(chi.squared.statistic.2dt, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.2dt <- c(expected.values.2dt[1])
-      for (i in 1+seq_along(expected.values.2dt)) {
-        cumulative.expected.values.2dt[i] <- cumulative.expected.values.2dt[i-1] + expected.values.2dt[i]
+      ks.expected.values.2dt <- dist.2dt(ks.res.hist$mids, dist.2dt.opt$par[1], dist.2dt.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.2dt <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.2dt <- c(simul.2dt, rep(ks.res.hist$mids[i], round(ks.expected.values.2dt[i], 0)))
       }
-      cumulative.expected.values.2dt <- cumulative.expected.values.2dt/sum(expected.values.2dt)
-      cumulative.expected.values.2dt <- cumulative.expected.values.2dt[!is.na(cumulative.expected.values.2dt)]
-      g.max.2dt <- max(abs(cumulative.data - cumulative.expected.values.2dt))
-      if (g.max.2dt < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.2dt <- "Accept"
-      } else {KS.2dt <- "Reject"}
+      ks.2dt <- ks.test(data, simul.2dt)
+      g.max.2dt <- as.numeric(ks.2dt$statistic)
+      KS.2dt <- as.numeric(ks.2dt$p.value)
+
+      # cumulative.expected.values.2dt <- c(expected.values.2dt[1])
+      # for (i in 1+seq_along(expected.values.2dt)) {
+      #   cumulative.expected.values.2dt[i] <- cumulative.expected.values.2dt[i-1] + expected.values.2dt[i]
+      # }
+      # cumulative.expected.values.2dt <- cumulative.expected.values.2dt/sum(expected.values.2dt)
+      # cumulative.expected.values.2dt <- cumulative.expected.values.2dt[!is.na(cumulative.expected.values.2dt)]
+      # g.max.2dt <- max(abs(cumulative.data - cumulative.expected.values.2dt))
+      # if (g.max.2dt < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.2dt <- "Accept"
+      # } else {KS.2dt <- "Reject"}
       # parameter estimate
       par.1.2dt <- dist.2dt.opt$par[1]
       par.2.2dt <- dist.2dt.opt$par[2]
@@ -542,20 +585,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.geometric <-  2 * dist.geometric.opt$value + length(dist.geometric.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.geometric <- dist.geometric(res.hist$mids, dist.geometric.opt$par[1], dist.geometric.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.geometric <- sum((res.hist$counts - expected.values.geometric)^2 / expected.values.geometric)
-      chi.squared.pvalue.geometric <- 1-pchisq(chi.squared.statistic.geometric, length(res.hist$counts)-3)
+      chi.expected.values.geometric <- dist.geometric(chi.res.hist$mids, dist.geometric.opt$par[1], dist.geometric.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.geometric <- sum((chi.res.hist$counts - chi.expected.values.geometric)^2 / chi.expected.values.geometric)
+      chi.squared.pvalue.geometric <- 1-pchisq(chi.squared.statistic.geometric, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.geometric <- c(expected.values.geometric[1])
-      for (i in 1+seq_along(expected.values.geometric)) {
-        cumulative.expected.values.geometric[i] <- cumulative.expected.values.geometric[i-1] + expected.values.geometric[i]
+      ks.expected.values.geometric <- dist.geometric(ks.res.hist$mids, dist.geometric.opt$par[1], dist.geometric.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.geometric <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.geometric <- c(simul.geometric, rep(ks.res.hist$mids[i], round(ks.expected.values.geometric[i], 0)))
       }
-      cumulative.expected.values.geometric <- cumulative.expected.values.geometric/sum(expected.values.geometric)
-      cumulative.expected.values.geometric <- cumulative.expected.values.geometric[!is.na(cumulative.expected.values.geometric)]
-      g.max.geometric <- max(abs(cumulative.data - cumulative.expected.values.geometric))
-      if (g.max.geometric < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.geometric <- "Accept"
-      } else {KS.geometric <- "Reject"}
+      ks.geometric <- ks.test(data, simul.geometric)
+      g.max.geometric <- as.numeric(ks.geometric$statistic)
+      KS.geometric <- as.numeric(ks.geometric$p.value)
+
+      # cumulative.expected.values.geometric <- c(expected.values.geometric[1])
+      # for (i in 1+seq_along(expected.values.geometric)) {
+      #   cumulative.expected.values.geometric[i] <- cumulative.expected.values.geometric[i-1] + expected.values.geometric[i]
+      # }
+      # cumulative.expected.values.geometric <- cumulative.expected.values.geometric/sum(expected.values.geometric)
+      # cumulative.expected.values.geometric <- cumulative.expected.values.geometric[!is.na(cumulative.expected.values.geometric)]
+      # g.max.geometric <- max(abs(cumulative.data - cumulative.expected.values.geometric))
+      # if (g.max.geometric < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.geometric <- "Accept"
+      # } else {KS.geometric <- "Reject"}
       # parameter estimate
       par.1.geometric <- dist.geometric.opt$par[1]
       par.2.geometric <- dist.geometric.opt$par[2]
@@ -625,7 +677,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
                                                       mean = dist.geometric.opt$par,
                                                       cov = solve(numDeriv::hessian(log.dist.geometric, x=dist.geometric.opt$par, r=data)) )
       } else {
-        kurtosis.geometric <- "Infinite Value"
+        kurtosis.stderr.geometric <- "Infinite Value"
       }
       # output
       geometric.values <- data.frame(aic.geometric, aicc.geometric, bic.geometric,
@@ -698,20 +750,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.logistic <-  2 * dist.logistic.opt$value + length(dist.logistic.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.logistic <- dist.logistic(res.hist$mids, dist.logistic.opt$par[1], dist.logistic.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.logistic <- sum((res.hist$counts - expected.values.logistic)^2 / expected.values.logistic)
-      chi.squared.pvalue.logistic <- 1-pchisq(chi.squared.statistic.logistic, length(res.hist$counts)-3)
+      chi.expected.values.logistic <- dist.logistic(chi.res.hist$mids, dist.logistic.opt$par[1], dist.logistic.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.logistic <- sum((chi.res.hist$counts - chi.expected.values.logistic)^2 / chi.expected.values.logistic)
+      chi.squared.pvalue.logistic <- 1-pchisq(chi.squared.statistic.logistic, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.logistic <- c(expected.values.logistic[1])
-      for (i in 1+seq_along(expected.values.logistic)) {
-        cumulative.expected.values.logistic[i] <- cumulative.expected.values.logistic[i-1] + expected.values.logistic[i]
+      ks.expected.values.logistic <- dist.logistic(ks.res.hist$mids, dist.logistic.opt$par[1], dist.logistic.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.logistic <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.logistic <- c(simul.logistic, rep(ks.res.hist$mids[i], round(ks.expected.values.logistic[i], 0)))
       }
-      cumulative.expected.values.logistic <- cumulative.expected.values.logistic/sum(expected.values.logistic)
-      cumulative.expected.values.logistic <- cumulative.expected.values.logistic[!is.na(cumulative.expected.values.logistic)]
-      g.max.logistic <- max(abs(cumulative.data - cumulative.expected.values.logistic))
-      if (g.max.logistic < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.logistic <- "Accept"
-      } else {KS.logistic <- "Reject"}
+      ks.logistic <- ks.test(data, simul.logistic)
+      g.max.logistic <- as.numeric(ks.logistic$statistic)
+      KS.logistic <- as.numeric(ks.logistic$p.value)
+
+      # cumulative.expected.values.logistic <- c(expected.values.logistic[1])
+      # for (i in 1+seq_along(expected.values.logistic)) {
+      #   cumulative.expected.values.logistic[i] <- cumulative.expected.values.logistic[i-1] + expected.values.logistic[i]
+      # }
+      # cumulative.expected.values.logistic <- cumulative.expected.values.logistic/sum(expected.values.logistic)
+      # cumulative.expected.values.logistic <- cumulative.expected.values.logistic[!is.na(cumulative.expected.values.logistic)]
+      # g.max.logistic <- max(abs(cumulative.data - cumulative.expected.values.logistic))
+      # if (g.max.logistic < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.logistic <- "Accept"
+      # } else {KS.logistic <- "Reject"}
       # parameter estimate
       par.1.logistic <- dist.logistic.opt$par[1]
       par.2.logistic <- dist.logistic.opt$par[2]
@@ -728,6 +789,17 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       mean.stderr.logistic <- msm::deltamethod(~ x1 * ((gamma(3/x2) * gamma(1-(3/x2))) / (gamma(2/x2) * gamma(1-(2/x2))) ), mean = dist.logistic.opt$par, cov = solve(numDeriv::hessian(log.dist.logistic, x=dist.logistic.opt$par, r=data)) )
       # variance
       variance.logistic <- "in progress"
+      # 1, 1/b, 1 + 1/b, -a^(-b) r^b
+      # x <- 1000
+      # par.2.logistic*x*hypergeo::hypergeo_buhring(1, 1/par.2.logistic, 1 + 1/par.2.logistic, -par.1.logistic^(-par.2.logistic)* x^par.2.logistic)
+      #
+      # ((x^2)/2)*(par.1.logistic^-par.2.logistic)*hypergeo::hypergeo_buhring(1, 2/par.2.logistic, (par.2.logistic+2)/par.2.logistic, -par.1.logistic^(-par.2.logistic) * x^par.2.logistic)
+      #
+      #
+      #
+      #
+      # buhring_eqn11
+      # hypergeo
       variance.stderr.logistic <-"in progress"
       # skewness
       skewness.logistic <- "in progress"
@@ -777,20 +849,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.lognorm <-  2 * dist.lognorm.opt$value + length(dist.lognorm.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.lognorm <- dist.lognorm(res.hist$mids, dist.lognorm.opt$par[1], dist.lognorm.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.lognorm <- sum((res.hist$counts - expected.values.lognorm)^2 / expected.values.lognorm)
-      chi.squared.pvalue.lognorm <- 1-pchisq(chi.squared.statistic.lognorm, length(res.hist$counts)-3)
+      chi.expected.values.lognorm <- dist.lognorm(chi.res.hist$mids, dist.lognorm.opt$par[1], dist.lognorm.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.lognorm <- sum((chi.res.hist$counts - chi.expected.values.lognorm)^2 / chi.expected.values.lognorm)
+      chi.squared.pvalue.lognorm <- 1-pchisq(chi.squared.statistic.lognorm, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.lognorm <- c(expected.values.lognorm[1])
-      for (i in 1+seq_along(expected.values.lognorm)) {
-        cumulative.expected.values.lognorm[i] <- cumulative.expected.values.lognorm[i-1] + expected.values.lognorm[i]
+      ks.expected.values.lognorm <- dist.lognorm(ks.res.hist$mids, dist.lognorm.opt$par[1], dist.lognorm.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.lognorm <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.lognorm <- c(simul.lognorm, rep(ks.res.hist$mids[i], round(ks.expected.values.lognorm[i], 0)))
       }
-      cumulative.expected.values.lognorm <- cumulative.expected.values.lognorm/sum(expected.values.lognorm)
-      cumulative.expected.values.lognorm <- cumulative.expected.values.lognorm[!is.na(cumulative.expected.values.lognorm)]
-      g.max.lognorm <- max(abs(cumulative.data - cumulative.expected.values.lognorm))
-      if (g.max.lognorm < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.lognorm <- "Accept"
-      } else {KS.lognorm <- "Reject"}
+      ks.lognorm <- ks.test(data, simul.lognorm)
+      g.max.lognorm <- as.numeric(ks.lognorm$statistic)
+      KS.lognorm <- as.numeric(ks.lognorm$p.value)
+
+      # cumulative.expected.values.lognorm <- c(expected.values.lognorm[1])
+      # for (i in 1+seq_along(expected.values.lognorm)) {
+      #   cumulative.expected.values.lognorm[i] <- cumulative.expected.values.lognorm[i-1] + expected.values.lognorm[i]
+      # }
+      # cumulative.expected.values.lognorm <- cumulative.expected.values.lognorm/sum(expected.values.lognorm)
+      # cumulative.expected.values.lognorm <- cumulative.expected.values.lognorm[!is.na(cumulative.expected.values.lognorm)]
+      # g.max.lognorm <- max(abs(cumulative.data - cumulative.expected.values.lognorm))
+      # if (g.max.lognorm < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.lognorm <- "Accept"
+      # } else {KS.lognorm <- "Reject"}
       # parameter estimate
       par.1.lognorm <- dist.lognorm.opt$par[1]
       par.2.lognorm <- dist.lognorm.opt$par[2]
@@ -882,20 +963,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.wald <-  2 * dist.wald.opt$value + length(dist.wald.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.wald <- dist.wald(res.hist$mids, dist.wald.opt$par[1], dist.wald.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.wald <- sum((res.hist$counts - expected.values.wald)^2 / expected.values.wald)
-      chi.squared.pvalue.wald <- 1-pchisq(chi.squared.statistic.wald, length(res.hist$counts)-3)
+      chi.expected.values.wald <- dist.wald(chi.res.hist$mids, dist.wald.opt$par[1], dist.wald.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.wald <- sum((chi.res.hist$counts - chi.expected.values.wald)^2 / chi.expected.values.wald)
+      chi.squared.pvalue.wald <- 1-pchisq(chi.squared.statistic.wald, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.wald <- c(expected.values.wald[1])
-      for (i in 1+seq_along(expected.values.wald)) {
-        cumulative.expected.values.wald[i] <- cumulative.expected.values.wald[i-1] + expected.values.wald[i]
+      ks.expected.values.wald <- dist.wald(ks.res.hist$mids, dist.wald.opt$par[1], dist.wald.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.wald <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.wald <- c(simul.wald, rep(ks.res.hist$mids[i], round(ks.expected.values.wald[i], 0)))
       }
-      cumulative.expected.values.wald <- cumulative.expected.values.wald/sum(expected.values.wald)
-      cumulative.expected.values.wald <- cumulative.expected.values.wald[!is.na(cumulative.expected.values.wald)]
-      g.max.wald <- max(abs(cumulative.data - cumulative.expected.values.wald))
-      if (g.max.wald < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.wald <- "Accept"
-      } else {KS.wald <- "Reject"}
+      ks.wald <- ks.test(data, simul.wald)
+      g.max.wald <- as.numeric(ks.wald$statistic)
+      KS.wald <- as.numeric(ks.wald$p.value)
+
+      # cumulative.expected.values.wald <- c(expected.values.wald[1])
+      # for (i in 1+seq_along(expected.values.wald)) {
+      #   cumulative.expected.values.wald[i] <- cumulative.expected.values.wald[i-1] + expected.values.wald[i]
+      # }
+      # cumulative.expected.values.wald <- cumulative.expected.values.wald/sum(expected.values.wald)
+      # cumulative.expected.values.wald <- cumulative.expected.values.wald[!is.na(cumulative.expected.values.wald)]
+      # g.max.wald <- max(abs(cumulative.data - cumulative.expected.values.wald))
+      # if (g.max.wald < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.wald <- "Accept"
+      # } else {KS.wald <- "Reject"}
       # parameter estimate
       par.1.wald <- dist.wald.opt$par[1]
       par.2.wald <- dist.wald.opt$par[2]
@@ -958,20 +1048,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.weibull <-  2 * dist.weibull.opt$value + length(dist.weibull.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.weibull <- dist.weibull(res.hist$mids, dist.weibull.opt$par[1], dist.weibull.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.weibull <- sum((res.hist$counts - expected.values.weibull)^2 / expected.values.weibull)
-      chi.squared.pvalue.weibull <- 1-pchisq(chi.squared.statistic.weibull, length(res.hist$counts)-3)
+      chi.expected.values.weibull <- dist.weibull(chi.res.hist$mids, dist.weibull.opt$par[1], dist.weibull.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.weibull <- sum((chi.res.hist$counts - chi.expected.values.weibull)^2 / chi.expected.values.weibull)
+      chi.squared.pvalue.weibull <- 1-pchisq(chi.squared.statistic.weibull, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.weibull <- c(expected.values.weibull[1])
-      for (i in 1+seq_along(expected.values.weibull)) {
-        cumulative.expected.values.weibull[i] <- cumulative.expected.values.weibull[i-1] + expected.values.weibull[i]
+      ks.expected.values.weibull <- dist.weibull(ks.res.hist$mids, dist.weibull.opt$par[1], dist.weibull.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.weibull <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.weibull <- c(simul.weibull, rep(ks.res.hist$mids[i], round(ks.expected.values.weibull[i], 0)))
       }
-      cumulative.expected.values.weibull <- cumulative.expected.values.weibull/sum(expected.values.weibull)
-      cumulative.expected.values.weibull <- cumulative.expected.values.weibull[!is.na(cumulative.expected.values.weibull)]
-      g.max.weibull <- max(abs(cumulative.data - cumulative.expected.values.weibull))
-      if (g.max.weibull < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.weibull <- "Accept"
-      } else {KS.weibull <- "Reject"}
+      ks.weibull <- ks.test(data, simul.weibull)
+      g.max.weibull <- as.numeric(ks.weibull$statistic)
+      KS.weibull <- as.numeric(ks.weibull$p.value)
+
+      # cumulative.expected.values.weibull <- c(expected.values.weibull[1])
+      # for (i in 1+seq_along(expected.values.weibull)) {
+      #   cumulative.expected.values.weibull[i] <- cumulative.expected.values.weibull[i-1] + expected.values.weibull[i]
+      # }
+      # cumulative.expected.values.weibull <- cumulative.expected.values.weibull/sum(expected.values.weibull)
+      # cumulative.expected.values.weibull <- cumulative.expected.values.weibull[!is.na(cumulative.expected.values.weibull)]
+      # g.max.weibull <- max(abs(cumulative.data - cumulative.expected.values.weibull))
+      # if (g.max.weibull < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.weibull <- "Accept"
+      # } else {KS.weibull <- "Reject"}
       # parameter estimate
       par.1.weibull <- dist.weibull.opt$par[1]
       par.2.weibull <- dist.weibull.opt$par[2]
@@ -1037,20 +1136,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.gamma <-  2 * dist.gamma.opt$value + length(dist.gamma.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.gamma <- dist.gamma(res.hist$mids, dist.gamma.opt$par[1],  dist.gamma.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.gamma <- sum((res.hist$counts - expected.values.gamma)^2 / expected.values.gamma)
-      chi.squared.pvalue.gamma <- 1-pchisq(chi.squared.statistic.gamma, length(res.hist$counts)-3)
+      chi.expected.values.gamma <- dist.gamma(chi.res.hist$mids, dist.gamma.opt$par[1],  dist.gamma.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.gamma <- sum((chi.res.hist$counts - chi.expected.values.gamma)^2 / chi.expected.values.gamma)
+      chi.squared.pvalue.gamma <- 1-pchisq(chi.squared.statistic.gamma, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.gamma <- c(expected.values.gamma[1])
-      for (i in 1+seq_along(expected.values.gamma)) {
-        cumulative.expected.values.gamma[i] <- cumulative.expected.values.gamma[i-1] + expected.values.gamma[i]
+      ks.expected.values.gamma <- dist.gamma(ks.res.hist$mids, dist.gamma.opt$par[1],  dist.gamma.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.gamma <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.gamma <- c(simul.gamma, rep(ks.res.hist$mids[i], round(ks.expected.values.gamma[i], 0)))
       }
-      cumulative.expected.values.gamma <- cumulative.expected.values.gamma/sum(expected.values.gamma)
-      cumulative.expected.values.gamma <- cumulative.expected.values.gamma[!is.na(cumulative.expected.values.gamma)]
-      g.max.gamma <- max(abs(cumulative.data - cumulative.expected.values.gamma))
-      if (g.max.gamma < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.gamma <- "Accept"
-      } else {KS.gamma <- "Reject"}
+      ks.gamma <- ks.test(data, simul.gamma)
+      g.max.gamma <- as.numeric(ks.gamma$statistic)
+      KS.gamma <- as.numeric(ks.gamma$p.value)
+
+      # cumulative.expected.values.gamma <- c(expected.values.gamma[1])
+      # for (i in 1+seq_along(expected.values.gamma)) {
+      #   cumulative.expected.values.gamma[i] <- cumulative.expected.values.gamma[i-1] + expected.values.gamma[i]
+      # }
+      # cumulative.expected.values.gamma <- cumulative.expected.values.gamma/sum(expected.values.gamma)
+      # cumulative.expected.values.gamma <- cumulative.expected.values.gamma[!is.na(cumulative.expected.values.gamma)]
+      # g.max.gamma <- max(abs(cumulative.data - cumulative.expected.values.gamma))
+      # if (g.max.gamma < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.gamma <- "Accept"
+      # } else {KS.gamma <- "Reject"}
       # parameter estimate
       par.1.gamma <- dist.gamma.opt$par[1]
       par.2.gamma <- dist.gamma.opt$par[2]
@@ -1120,20 +1228,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.logsech <-  2 * dist.logsech.opt$value + length(dist.logsech.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.logsech <- dist.logsech(res.hist$mids, dist.logsech.opt$par[1], dist.logsech.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.logsech <- sum((res.hist$counts - expected.values.logsech)^2 / expected.values.logsech)
-      chi.squared.pvalue.logsech <- 1-pchisq(chi.squared.statistic.logsech, length(res.hist$counts)-3)
+      chi.expected.values.logsech <- dist.logsech(chi.res.hist$mids, dist.logsech.opt$par[1], dist.logsech.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.logsech <- sum((chi.res.hist$counts - chi.expected.values.logsech)^2 / chi.expected.values.logsech)
+      chi.squared.pvalue.logsech <- 1-pchisq(chi.squared.statistic.logsech, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.logsech <- c(expected.values.logsech[1])
-      for (i in 1+seq_along(expected.values.logsech)) {
-        cumulative.expected.values.logsech[i] <- cumulative.expected.values.logsech[i-1] + expected.values.logsech[i]
+      ks.expected.values.logsech <- dist.logsech(ks.res.hist$mids, dist.logsech.opt$par[1], dist.logsech.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.logsech <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.logsech <- c(simul.logsech, rep(ks.res.hist$mids[i], round(ks.expected.values.logsech[i], 0)))
       }
-      cumulative.expected.values.logsech <- cumulative.expected.values.logsech/sum(expected.values.logsech)
-      cumulative.expected.values.logsech <- cumulative.expected.values.logsech[!is.na(cumulative.expected.values.logsech)]
-      g.max.logsech <- max(abs(cumulative.data - cumulative.expected.values.logsech))
-      if (g.max.logsech < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.logsech <- "Accept"
-      } else {KS.logsech <- "Reject"}
+      ks.logsech <- ks.test(data, simul.logsech)
+      g.max.logsech <- as.numeric(ks.logsech$statistic)
+      KS.logsech <- as.numeric(ks.logsech$p.value)
+
+      # cumulative.expected.values.logsech <- c(expected.values.logsech[1])
+      # for (i in 1+seq_along(expected.values.logsech)) {
+      #   cumulative.expected.values.logsech[i] <- cumulative.expected.values.logsech[i-1] + expected.values.logsech[i]
+      # }
+      # cumulative.expected.values.logsech <- cumulative.expected.values.logsech/sum(expected.values.logsech)
+      # cumulative.expected.values.logsech <- cumulative.expected.values.logsech[!is.na(cumulative.expected.values.logsech)]
+      # g.max.logsech <- max(abs(cumulative.data - cumulative.expected.values.logsech))
+      # if (g.max.logsech < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.logsech <- "Accept"
+      # } else {KS.logsech <- "Reject"}
       # parameter estimate
       par.1.logsech <- dist.logsech.opt$par[1]
       par.2.logsech <- dist.logsech.opt$par[2]
@@ -1205,20 +1322,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.cauchy <-  2 * dist.cauchy.opt$value + length(dist.cauchy.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.cauchy <- dist.cauchy(res.hist$mids, dist.cauchy.opt$par[1], dist.cauchy.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.cauchy <- sum((res.hist$counts - expected.values.cauchy)^2 / expected.values.cauchy)
-      chi.squared.pvalue.cauchy <- 1-pchisq(chi.squared.statistic.cauchy, length(res.hist$counts)-3)
+      chi.expected.values.cauchy <- dist.cauchy(chi.res.hist$mids, dist.cauchy.opt$par[1], dist.cauchy.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.cauchy <- sum((chi.res.hist$counts - chi.expected.values.cauchy)^2 / chi.expected.values.cauchy)
+      chi.squared.pvalue.cauchy <- 1-pchisq(chi.squared.statistic.cauchy, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.cauchy <- c(expected.values.cauchy[1])
-      for (i in 1+seq_along(expected.values.cauchy)) {
-        cumulative.expected.values.cauchy[i] <- cumulative.expected.values.cauchy[i-1] + expected.values.cauchy[i]
+      ks.expected.values.cauchy <- dist.cauchy(ks.res.hist$mids, dist.cauchy.opt$par[1], dist.cauchy.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.cauchy <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.cauchy <- c(simul.cauchy, rep(ks.res.hist$mids[i], round(ks.expected.values.cauchy[i], 0)))
       }
-      cumulative.expected.values.cauchy <- cumulative.expected.values.cauchy/sum(expected.values.cauchy)
-      cumulative.expected.values.cauchy <- cumulative.expected.values.cauchy[!is.na(cumulative.expected.values.cauchy)]
-      g.max.cauchy <- max(abs(cumulative.data - cumulative.expected.values.cauchy))
-      if (g.max.cauchy < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.cauchy <- "Accept"
-      } else {KS.cauchy <- "Reject"}
+      ks.cauchy <- ks.test(data, simul.cauchy)
+      g.max.cauchy <- as.numeric(ks.cauchy$statistic)
+      KS.cauchy <- as.numeric(ks.cauchy$p.value)
+
+      # cumulative.expected.values.cauchy <- c(expected.values.cauchy[1])
+      # for (i in 1+seq_along(expected.values.cauchy)) {
+      #   cumulative.expected.values.cauchy[i] <- cumulative.expected.values.cauchy[i-1] + expected.values.cauchy[i]
+      # }
+      # cumulative.expected.values.cauchy <- cumulative.expected.values.cauchy/sum(expected.values.cauchy)
+      # cumulative.expected.values.cauchy <- cumulative.expected.values.cauchy[!is.na(cumulative.expected.values.cauchy)]
+      # g.max.cauchy <- max(abs(cumulative.data - cumulative.expected.values.cauchy))
+      # if (g.max.cauchy < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.cauchy <- "Accept"
+      # } else {KS.cauchy <- "Reject"}
       # parameter estimate
       par.1.cauchy <- dist.cauchy.opt$par[1]
       par.2.cauchy <- dist.cauchy.opt$par[2]
@@ -1285,20 +1411,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.gumbel <-  2 * dist.gumbel.opt$value + length(dist.gumbel.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.gumbel <- dist.gumbel(res.hist$mids, dist.gumbel.opt$par[1], dist.gumbel.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.gumbel <- sum((res.hist$counts - expected.values.gumbel)^2 / expected.values.gumbel)
-      chi.squared.pvalue.gumbel <- 1-pchisq(chi.squared.statistic.gumbel, length(res.hist$counts)-3)
+      chi.expected.values.gumbel <- dist.gumbel(chi.res.hist$mids, dist.gumbel.opt$par[1], dist.gumbel.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.gumbel <- sum((chi.res.hist$counts - chi.expected.values.gumbel)^2 / chi.expected.values.gumbel)
+      chi.squared.pvalue.gumbel <- 1-pchisq(chi.squared.statistic.gumbel, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.gumbel <- c(expected.values.gumbel[1])
-      for (i in 1+seq_along(expected.values.gumbel)) {
-        cumulative.expected.values.gumbel[i] <- cumulative.expected.values.gumbel[i-1] + expected.values.gumbel[i]
+      ks.expected.values.gumbel <- dist.gumbel(ks.res.hist$mids, dist.gumbel.opt$par[1], dist.gumbel.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.gumbel <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.gumbel <- c(simul.gumbel, rep(ks.res.hist$mids[i], round(ks.expected.values.gumbel[i], 0)))
       }
-      cumulative.expected.values.gumbel <- cumulative.expected.values.gumbel/sum(expected.values.gumbel)
-      cumulative.expected.values.gumbel <- cumulative.expected.values.gumbel[!is.na(cumulative.expected.values.gumbel)]
-      g.max.gumbel <- max(abs(cumulative.data - cumulative.expected.values.gumbel))
-      if (g.max.gumbel < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.gumbel <- "Accept"
-      } else {KS.gumbel <- "Reject"}
+      ks.gumbel <- ks.test(data, simul.gumbel)
+      g.max.gumbel <- as.numeric(ks.gumbel$statistic)
+      KS.gumbel <- as.numeric(ks.gumbel$p.value)
+
+      # cumulative.expected.values.gumbel <- c(expected.values.gumbel[1])
+      # for (i in 1+seq_along(expected.values.gumbel)) {
+      #   cumulative.expected.values.gumbel[i] <- cumulative.expected.values.gumbel[i-1] + expected.values.gumbel[i]
+      # }
+      # cumulative.expected.values.gumbel <- cumulative.expected.values.gumbel/sum(expected.values.gumbel)
+      # cumulative.expected.values.gumbel <- cumulative.expected.values.gumbel[!is.na(cumulative.expected.values.gumbel)]
+      # g.max.gumbel <- max(abs(cumulative.data - cumulative.expected.values.gumbel))
+      # if (g.max.gumbel < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.gumbel <- "Accept"
+      # } else {KS.gumbel <- "Reject"}
       # parameter estimate
       par.1.gumbel <- dist.gumbel.opt$par[1]
       par.2.gumbel <- dist.gumbel.opt$par[2]
@@ -1358,20 +1493,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.frechet <-  2 * dist.frechet.opt$value + length(dist.frechet.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.frechet <- dist.frechet(res.hist$mids, dist.frechet.opt$par[1], dist.frechet.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.frechet <- sum((res.hist$counts - expected.values.frechet)^2 / expected.values.frechet)
-      chi.squared.pvalue.frechet <- 1-pchisq(chi.squared.statistic.frechet, length(res.hist$counts)-3)
+      chi.expected.values.frechet <- dist.frechet(chi.res.hist$mids, dist.frechet.opt$par[1], dist.frechet.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.frechet <- sum((chi.res.hist$counts - chi.expected.values.frechet)^2 / chi.expected.values.frechet)
+      chi.squared.pvalue.frechet <- 1-pchisq(chi.squared.statistic.frechet, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.frechet <- c(expected.values.frechet[1])
-      for (i in 1+seq_along(expected.values.frechet)) {
-        cumulative.expected.values.frechet[i] <- cumulative.expected.values.frechet[i-1] + expected.values.frechet[i]
+      ks.expected.values.frechet <- dist.frechet(ks.res.hist$mids, dist.frechet.opt$par[1], dist.frechet.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.frechet <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.frechet <- c(simul.frechet, rep(ks.res.hist$mids[i], round(ks.expected.values.frechet[i], 0)))
       }
-      cumulative.expected.values.frechet <- cumulative.expected.values.frechet/sum(expected.values.frechet)
-      cumulative.expected.values.frechet <- cumulative.expected.values.frechet[!is.na(cumulative.expected.values.frechet)]
-      g.max.frechet <- max(abs(cumulative.data - cumulative.expected.values.frechet))
-      if (g.max.frechet < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.frechet <- "Accept"
-      } else {KS.frechet <- "Reject"}
+      ks.frechet <- ks.test(data, simul.frechet)
+      g.max.frechet <- as.numeric(ks.frechet$statistic)
+      KS.frechet <- as.numeric(ks.frechet$p.value)
+
+      # cumulative.expected.values.frechet <- c(expected.values.frechet[1])
+      # for (i in 1+seq_along(expected.values.frechet)) {
+      #   cumulative.expected.values.frechet[i] <- cumulative.expected.values.frechet[i-1] + expected.values.frechet[i]
+      # }
+      # cumulative.expected.values.frechet <- cumulative.expected.values.frechet/sum(expected.values.frechet)
+      # cumulative.expected.values.frechet <- cumulative.expected.values.frechet[!is.na(cumulative.expected.values.frechet)]
+      # g.max.frechet <- max(abs(cumulative.data - cumulative.expected.values.frechet))
+      # if (g.max.frechet < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.frechet <- "Accept"
+      # } else {KS.frechet <- "Reject"}
       # parameter estimate
       par.1.frechet <- dist.frechet.opt$par[1]
       par.2.frechet <- dist.frechet.opt$par[2]
@@ -1472,20 +1616,29 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # BIC
       bic.weibull <-  2 * dist.weibull.opt$value + length(dist.weibull.opt$par)*log(length(data))
       # Chi-squared
-      expected.values.weibull <- dist.weibull(res.hist$mids, dist.weibull.opt$par[1], dist.weibull.opt$par[2])*length(data)*(res.hist$breaks[2] - res.hist$breaks[1])
-      chi.squared.statistic.weibull <- sum((res.hist$counts - expected.values.weibull)^2 / expected.values.weibull)
-      chi.squared.pvalue.weibull <- 1-pchisq(chi.squared.statistic.weibull, length(res.hist$counts)-3)
+      chi.expected.values.weibull <- dist.weibull(chi.res.hist$mids, dist.weibull.opt$par[1], dist.weibull.opt$par[2])*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
+      chi.squared.statistic.weibull <- sum((chi.res.hist$counts - chi.expected.values.weibull)^2 / chi.expected.values.weibull)
+      chi.squared.pvalue.weibull <- 1-pchisq(chi.squared.statistic.weibull, length(chi.res.hist$counts)-3)
       # Kolmogorov-Smirnov
-      cumulative.expected.values.weibull <- c(expected.values.weibull[1])
-      for (i in 1+seq_along(expected.values.weibull)) {
-        cumulative.expected.values.weibull[i] <- cumulative.expected.values.weibull[i-1] + expected.values.weibull[i]
+      ks.expected.values.weibull <- dist.weibull(ks.res.hist$mids, dist.weibull.opt$par[1], dist.weibull.opt$par[2])*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
+      simul.weibull <- c()
+      for (i in seq_along(ks.res.hist$mids)) {
+        simul.weibull <- c(simul.weibull, rep(ks.res.hist$mids[i], round(ks.expected.values.weibull[i], 0)))
       }
-      cumulative.expected.values.weibull <- cumulative.expected.values.weibull/sum(expected.values.weibull)
-      cumulative.expected.values.weibull <- cumulative.expected.values.weibull[!is.na(cumulative.expected.values.weibull)]
-      g.max.weibull <- max(abs(cumulative.data - cumulative.expected.values.weibull))
-      if (g.max.weibull < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-        KS.weibull <- "Accept"
-      } else {KS.weibull <- "Reject"}
+      ks.weibull <- ks.test(data, simul.weibull)
+      g.max.weibull <- as.numeric(ks.weibull$statistic)
+      KS.weibull <- as.numeric(ks.weibull$p.value)
+
+      # cumulative.expected.values.weibull <- c(expected.values.weibull[1])
+      # for (i in 1+seq_along(expected.values.weibull)) {
+      #   cumulative.expected.values.weibull[i] <- cumulative.expected.values.weibull[i-1] + expected.values.weibull[i]
+      # }
+      # cumulative.expected.values.weibull <- cumulative.expected.values.weibull/sum(expected.values.weibull)
+      # cumulative.expected.values.weibull <- cumulative.expected.values.weibull[!is.na(cumulative.expected.values.weibull)]
+      # g.max.weibull <- max(abs(cumulative.data - cumulative.expected.values.weibull))
+      # if (g.max.weibull < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
+      #   KS.weibull <- "Accept"
+      # } else {KS.weibull <- "Reject"}
       # parameter estimate
       par.1.weibull <- dist.weibull.opt$par[1]
       par.2.weibull <- dist.weibull.opt$par[2]
