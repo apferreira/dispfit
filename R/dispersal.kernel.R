@@ -63,182 +63,25 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   if (isFALSE(extreme.values)) {
     ### 1 ### GAUSSIAN / RAYLEIGH ### DONE!
     if ("all" %in% distribution | "rayleigh" %in% distribution) {
-      print(paste("Fitting Rayleigh distribution..."))
-      # function
-      log.dist.rayleigh <- function (r, a) {
-        fg <-(1/(pi*a^2)) * exp(-r^2/a^2) ## Rayleigh, as defined in Nathan 2012
-        -sum(log(fg)) ## Negative Log Likelihood
-      }
-      dist.rayleigh <- function (r, a) {
-        fg <- 2*pi*r*(1/(pi*a^2)) * exp(-r^2/a^2)
-      }
-      # initial values estimation
-      n <- length(data)
-      sd0 <- sqrt((n - 1)/n) * sd(data) ## parameter estimate to use as initial value
-      # optimization procedure
-      dist.rayleigh.opt <- optim (par = sd0, ## initial value
-                                  fn = log.dist.rayleigh, ## function to minimize
-                                  r = data, ## dados
-                                  method = "Brent", ## one-parameter method
-                                  lower = 0.000001, ## lower-bound for parameter
-                                  upper = 100000)
-      kernel.fit$rayleigh <- dist.rayleigh.opt
+      message(paste("Fitting Rayleigh distribution..."))
+      rayleigh.values <- rayleigh.function(kernel.fit$data, chi.res.hist, ks.res.hist)
 
-      # output values
-      # AIC
-      aic.rayleigh <- 2 * length(dist.rayleigh.opt$par) + 2 * dist.rayleigh.opt$value
-      # AICc
-      aicc.rayleigh <- aic.rayleigh + (2 * length(dist.rayleigh.opt$par)^2 + 2 * length(dist.rayleigh.opt$par))/(length(data) - length(dist.rayleigh.opt$par) - 1 )
-      # BIC
-      bic.rayleigh <-  2 * dist.rayleigh.opt$value + length(dist.rayleigh.opt$par)*log(length(data))
-      # Chi-squared - from Press 1992, pp. 621-622
-      chi.expected.values.rayleigh <- dist.rayleigh(chi.res.hist$mids,dist.rayleigh.opt$par)*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
-      chi.squared.statistic.rayleigh <- sum((chi.res.hist$counts - chi.expected.values.rayleigh)^2 / chi.expected.values.rayleigh)
-      chi.squared.pvalue.rayleigh <- 1 - pchisq(chi.squared.statistic.rayleigh, length(chi.res.hist$counts)-2)
-      # Kolmogorov-Smirnov - from Sokal 1995, pp. 223-224
-      ks.expected.values.rayleigh <- dist.rayleigh(ks.res.hist$mids,dist.rayleigh.opt$par)*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
-      simul.rayleigh <- c()
-      for (i in seq_along(ks.res.hist$mids)) {
-        simul.rayleigh <- c(simul.rayleigh, rep(ks.res.hist$mids[i], round(ks.expected.values.rayleigh[i], 0)))
-      }
-      ks.rayleigh <- ks.test(data, simul.rayleigh)
-      ks.d.rayleigh <- as.numeric(ks.rayleigh$statistic)
-      ks.p.rayleigh <- as.numeric(ks.rayleigh$p.value)
-
-      # cumulative.expected.values.rayleigh <- c(expected.values.rayleigh[1])
-      # for (i in 1+seq_along(expected.values.rayleigh)) {
-      #   cumulative.expected.values.rayleigh[i] <- cumulative.expected.values.rayleigh[i-1] + expected.values.rayleigh[i]
-      # }
-      # cumulative.expected.values.rayleigh <- cumulative.expected.values.rayleigh/sum(expected.values.rayleigh)
-      # cumulative.expected.values.rayleigh <- cumulative.expected.values.rayleigh[!is.na(cumulative.expected.values.rayleigh)]
-      # g.max.rayleigh <- max(abs(cumulative.data - cumulative.expected.values.rayleigh))
-      # if (g.max.rayleigh < (sqrt(-log(0.05/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-      #   KS.rayleigh <- "Accept"
-      # } else {KS.rayleigh <- "Reject"}
-
-      # parameter estimate
-      par.1.rayleigh <- dist.rayleigh.opt$par
-      par.2.rayleigh <- NA
-      # parameter estimate standard error
-      par.1.se.rayleigh <- sqrt(diag(solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data))))
-      # par.1.se.rayleigh <- sd(replicate(1000, optim (par = sd0, ## initial value
-      #                       fn = log.dist.rayleigh, ## function to minimize
-      #                       r = sample(data, replace = T), ## dados
-      #                       method = "Brent", ## one-parameter method
-      #                       lower = 0.000001, ## lower-bound for parameter
-      #                       upper = 100000)$par))
-      par.2.se.rayleigh <- NA
-      # mean
-      mean.rayleigh <- dist.rayleigh.opt$par*sqrt(pi)/2
-      mean.stderr.rayleigh <- msm::deltamethod(~ x1 * sqrt(pi) / 2, mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
-      # variance
-      variance.rayleigh <- ((4-pi)*(dist.rayleigh.opt$par^2))/4
-      variance.stderr.rayleigh <- msm::deltamethod(~ ((4-pi)*(x1^2))/4, mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
-      # standard deviation
-      stdev.rayleigh <- sqrt(((4-pi)*(dist.rayleigh.opt$par^2))/4)
-      stdev.stderr.rayleigh <- msm::deltamethod(~ sqrt(((4-pi)*(x1^2))/4), mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
-      # skewness
-      skewness.rayleigh <- ((3*sqrt(pi)*dist.rayleigh.opt$par^3)/4)/variance.rayleigh^(3/2)
-      skewness.stderr.rayleigh <- msm::deltamethod(~ (( (3*sqrt(pi)*x1^3) /4)) / (( (4-pi) * (x1^2) )/4)^(3/2), mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
-      # kurtosis
-      kurtosis.rayleigh <- (2*dist.rayleigh.opt$par^4)/variance.rayleigh^2
-      kurtosis.stderr.rayleigh <- msm::deltamethod(~ (2*x1^4) / (( (4-pi) * (x1^2) )/4)^(2), mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
-      # output
-      rayleigh.values <- data.frame(aic.rayleigh, aicc.rayleigh, bic.rayleigh,
-                                    chi.squared.statistic.rayleigh, chi.squared.pvalue.rayleigh, ks.d.rayleigh, ks.p.rayleigh,
-                                    par.1.rayleigh, par.1.se.rayleigh, par.2.rayleigh, par.2.se.rayleigh,
-                                    mean.rayleigh, mean.stderr.rayleigh, variance.rayleigh, variance.stderr.rayleigh,
-                                    skewness.rayleigh, skewness.stderr.rayleigh, kurtosis.rayleigh, kurtosis.stderr.rayleigh)
-      values <- rbind(values, setNames(rayleigh.values, names(values)))
+      kernel.fit$rayleigh <- rayleigh.values$opt
+      values <- rbind(values, setNames(rayleigh.values$res, names(values)))
       row.names(values)[length(values$AIC)] <- "Rayleigh"
-      # end
     }
     if ("all" %in% distribution | "exponential" %in% distribution) {
-      print(paste("Fitting Exponential distribution..."))
-      ### 2 ### EXPONENTIAL ### DONE!
-      # function
-      log.dist.exponential <- function (r, a) {
-        fexponential <- (1 / (2 * pi * a * r )) * exp(-r/a) # corrected function, adapted from Nathan 2012
-        -sum(log(fexponential))
-      }
-      dist.exponential <- function (r, a) {
-        fexponential <-  2*pi*r*(1 / (2 * pi * a * r )) * exp(-r/a) # corrected function, adapted from Nathan 2012
-      }
-      # initial values estimation
-      rate <- 1/mean(data)
-      # optimization procedure
-      dist.exponential.opt <- optim (par = rate,
-                                     fn = log.dist.exponential,
-                                     r = data,
-                                     method = "Brent",
-                                     lower = 0.000001,
-                                     upper = 100000)
-      kernel.fit$exponential <- dist.exponential.opt
-      # output values
-      # AIC
-      aic.exponential <- 2 + 2 * dist.exponential.opt$value
-      # AICc
-      aicc.exponential <- aic.exponential + (2 * length(dist.exponential.opt$par)^2 + 2 * length(dist.exponential.opt$par))/(length(data) - length(dist.exponential.opt$par) - 1 )
-      # BIC
-      bic.exponential <-  2 * dist.exponential.opt$value + length(dist.exponential.opt$par)*log(length(data))
-      # Chi-squared
-      chi.expected.values.exponential <- dist.exponential(chi.res.hist$mids, dist.exponential.opt$par)*length(data)*(chi.res.hist$breaks[2] - chi.res.hist$breaks[1])
-      chi.squared.statistic.exponential <- sum((chi.res.hist$counts - chi.expected.values.exponential)^2 / chi.expected.values.exponential)
-      chi.squared.pvalue.exponential <- 1-pchisq(chi.squared.statistic.exponential, length(chi.res.hist$counts)-2)
-      # Kolmogorov-Smirnov
-      ks.expected.values.exponential <- dist.exponential(ks.res.hist$mids, dist.exponential.opt$par)*length(data)*(ks.res.hist$breaks[2] - ks.res.hist$breaks[1])
-      simul.exponential <- c()
-      for (i in seq_along(ks.res.hist$mids)) {
-        simul.exponential <- c(simul.exponential, rep(ks.res.hist$mids[i], round(ks.expected.values.exponential[i], 0)))
-      }
-      ks.exponential <- ks.test(data, simul.exponential)
-      g.max.exponential <- as.numeric(ks.exponential$statistic)
-      KS.exponential <- as.numeric(ks.exponential$p.value)
+      message(paste("Fitting Exponential distribution..."))
+      exponential.values <- exponential.function(kernel.fit$data, chi.res.hist, ks.res.hist)
 
-      # cumulative.expected.values.exponential <- c(expected.values.exponential[1])
-      # for (i in 1+seq_along(expected.values.exponential)) {
-      #   cumulative.expected.values.exponential[i] <- cumulative.expected.values.exponential[i-1] + expected.values.exponential[i]
-      # }
-      # cumulative.expected.values.exponential <- cumulative.expected.values.exponential/sum(expected.values.exponential)
-      # cumulative.expected.values.exponential <- cumulative.expected.values.exponential[!is.na(cumulative.expected.values.exponential)]
-      # g.max.exponential <- max(abs(cumulative.data - cumulative.expected.values.exponential))
-      # if (g.max.exponential < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
-      #   KS.exponential <- "Accept"
-      # } else {KS.exponential <- "Reject"}
-      # parameter estimate
-      par.1.exponential <- dist.exponential.opt$par
-      par.2.exponential <- NA
-      # parameter estimate standard error
-      par.1.se.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.exponential.opt$par, r=data))))
-      par.2.se.exponential <- NA
-      # mean dispersal distance
-      mean.exponential <- dist.exponential.opt$par
-      mean.stderr.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.exponential.opt$par, r=data))))
-      # variance
-      variance.exponential <- dist.exponential.opt$par^2
-      variance.stderr.exponential <- msm::deltamethod(~ x1^2, mean = dist.exponential.opt$par, cov = solve(numDeriv::hessian(log.dist.exponential, x=dist.exponential.opt$par, r=data)))
-      # standard deviation
-      stdev.exponential <- dist.exponential.opt$par
-      stdev.stderr.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.exponential.opt$par, r=data))))
-      # skewness
-      skewness.exponential <- 6
-      skewness.stderr.exponential <- NA
-      # kurtosis
-      kurtosis.exponential <- 24
-      kurtosis.stderr.exponential <- NA
-      # output
-      exponential.values <- data.frame(aic.exponential, aicc.exponential, bic.exponential,
-                                       chi.squared.statistic.exponential, chi.squared.pvalue.exponential, g.max.exponential, KS.exponential,
-                                       par.1.exponential, par.1.se.exponential, par.2.exponential, par.2.se.exponential,
-                                       mean.exponential, mean.stderr.exponential, variance.exponential, variance.stderr.exponential,
-                                       skewness.exponential, skewness.stderr.exponential, kurtosis.exponential, kurtosis.stderr.exponential)
-      values <- rbind(values, setNames(exponential.values, names(values)))
+      kernel.fit$exponential <- exponential.values$opt
+      values <- rbind(values, setNames(exponential.values$res, names(values)))
       row.names(values)[length(values$AIC)] <- "Exponential"
       # end
     }
     ## 3 ### EXPONENTIAL POWER / GENERALIZED NORMAL / GENERALIZED ERROR
     if ("all" %in% distribution | "general normal" %in% distribution) {
-      print(paste("Fitting Generalized Normal distribution..."))
+      message(paste("Fitting Generalized Normal distribution..."))
       # function
       log.dist.generalnormal <- function (r, par) {
         a <- par[1] ## scale
@@ -386,7 +229,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 4 ### 2Dt / BIVARIATE STUDENT'S T
     if ("all" %in% distribution | "2Dt" %in% distribution) {
-      print(paste("Fitting 2Dt distribution..."))
+      message(paste("Fitting 2Dt distribution..."))
       # function
       log.dist.2dt <- function (r, par) {
         a <- par[1] ## scale parameter
@@ -534,7 +377,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 5 ### POWER-LAW / GEOMETRIC
     if ("all" %in% distribution | "geometric" %in% distribution) {
-      print(paste("Fitting Geometric distribution..."))
+      message(paste("Fitting Geometric distribution..."))
       # function
       log.dist.geometric <- function (r, par) {
         a <- par[1]
@@ -693,7 +536,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
 
     ### 7 ### LOGISTIC ###
     if ("all" %in% distribution | "logistic" %in% distribution) {
-      print(paste("Fitting Logistic distribution..."))
+      message(paste("Fitting Logistic distribution..."))
       # function
       log.dist.logistic <- function (par, r) {
         a <- par[1] ## location, mean
@@ -819,7 +662,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 8 ### LOGNORMAL ### DONE!
     if ("all" %in% distribution | "lognormal" %in% distribution) {
-      print(paste("Fitting Log-Normal distribution..."))
+      message(paste("Fitting Log-Normal distribution..."))
       # function
       log.dist.lognorm <- function (par, r) {
         a <- par[1]
@@ -933,7 +776,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
 
     ### 10 ### WALD (INVERSE GAUSSIAN) ### DONE!
     if ("all" %in% distribution | "wald" %in% distribution) {
-      print(paste("Fitting Wald distribution..."))
+      message(paste("Fitting Wald distribution..."))
       # function
       log.dist.wald <- function (r, par) {
         a <- par[1] ## location parameter, mean
@@ -1016,7 +859,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 11 ### WEIBULL ### DONE!
     if ("all" %in% distribution | "weibull" %in% distribution) {
-      print(paste("Fitting Weibull distribution..."))
+      message(paste("Fitting Weibull distribution..."))
       # function
       log.dist.weibull <- function (r, par) {
         a <- par[1] ## scale
@@ -1106,7 +949,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 12 ### GAMMA ### DONE!
     if ("all" %in% distribution | "gamma" %in% distribution) {
-      print(paste("Fitting Gamma distribution..."))
+      message(paste("Fitting Gamma distribution..."))
       # function
       log.dist.gamma <- function (par, r) {
         a <- par[1] ## scale
@@ -1197,7 +1040,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 13 ### LOG-SECH / HYPERBOLIC SECANT ### DONE!
     if ("all" %in% distribution | "log-sech" %in% distribution) {
-      print(paste("Fitting Log-sech distribution..."))
+      message(paste("Fitting Log-sech distribution..."))
       # function
       log.dist.logsech <- function (par, r) {
         a <- par[1] ## location, median
@@ -1291,7 +1134,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 14 ### CAUCHY
     if ("all" %in% distribution | "cauchy" %in% distribution) {
-      print(paste("Fitting Cauchy distribution..."))
+      message(paste("Fitting Cauchy distribution..."))
       # function
       log.dist.cauchy <- function (par, r) {
         a <- par[1]
@@ -1377,7 +1220,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### EXTREME DISTRIBUTIONS FROM GARCIA AND BORDA DE AGUA 2017
     ### 15 ### GUMBEL
     if ("all" %in% distribution | "gumbel" %in% distribution) {
-      print(paste("Fitting Gumbel distribution..."))
+      message(paste("Fitting Gumbel distribution..."))
       # function
       log.dist.gumbel <- function (par, r) {
         a <- par[1] # location, u
@@ -1464,7 +1307,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 16 ### FRECHET
     if ("all" %in% distribution | "frechet" %in% distribution) {
-      print(paste("Fitting Frechet distribution..."))
+      message(paste("Fitting Frechet distribution..."))
       # function
       log.dist.frechet <- function (par, r) {
         a <- par[1] # shape, a
@@ -1584,7 +1427,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     ### 11 ### WEIBULL (EXTREME VALUES) ### DONE!
     if ("all" %in% distribution | "weibull" %in% distribution) {
-      print(paste("Fitting Weibull distribution..."))
+      message(paste("Fitting Weibull distribution..."))
       # function
       log.dist.weibull <- function (r, par) {
         a <- par[1] ## scale
@@ -1681,7 +1524,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     #   -sum(log(fgumbel)) ## Negative Log Likelihood
     # }
     # (1/c) * ((1 + (a * ((r-b)/c)))^(-1/a))^(a+1) * exp(-((1 + (a * ((r-b)/c)))^(-1/a)))
-  } else {print("Please select TRUE/FALSE in extreme.values")}
+  } else {message("Please select TRUE/FALSE in extreme.values")}
 
   ### FINAL OUTPUTS ###
   kernel.fit$values <- values[-1,]
