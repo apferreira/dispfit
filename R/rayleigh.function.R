@@ -1,4 +1,3 @@
-# function
 rayleigh.function <- function (data, chi.res.hist, ks.res.hist) {
 log.dist.rayleigh <- function (r, a) {
   fg <-(1/(pi*a^2)) * exp(-r^2/a^2) ## Rayleigh, as defined in Nathan 2012

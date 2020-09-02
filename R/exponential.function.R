@@ -1,4 +1,3 @@
-# function
 exponential.function <- function (data, chi.res.hist, ks.res.hist) {
 log.dist.exponential <- function (r, a) {
   fexponential <- (1 / (2 * pi * a * r )) * exp(-r/a) # corrected function, adapted from Nathan 2012
