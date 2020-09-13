@@ -19,7 +19,6 @@ dist.cauchy.opt <- optim (par = c(location, scale), ## valor inicial para o "a"
                           method = "Nelder-Mead"
                           # lower = c(0.00001, 0.00001)
 )
-kernel.fit$cauchy <- dist.cauchy.opt
 # output values
 # AIC
 aic.cauchy <- 2*length(dist.cauchy.opt$par) + 2 * dist.cauchy.opt$value
