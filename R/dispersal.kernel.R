@@ -33,7 +33,9 @@
 #' ## display table
 #' fit$distribution.selection
 
-dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", extreme.values = FALSE) {
+dispersal.kernel <- function(x, ...) UseMethod("dispfit")
+
+dispersal.kernel.default <- function (data, distribution = "all", order.by = "AICc", extreme.values = FALSE) {
   # require("msm")
   # require("numDeriv")
   kernel.fit <- list()
