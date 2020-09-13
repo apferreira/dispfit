@@ -62,4 +62,3 @@
 #' @author António Proença-Ferreira, \email{antoniomiguelpferreira@@gmail.com}
 #' @docType package
 #' @name dispfit
-NULL
