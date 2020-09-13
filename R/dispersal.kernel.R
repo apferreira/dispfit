@@ -526,7 +526,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   kernel.fit
 }
 summary.Dispfit <- function(x) {
-    stopifnot(inherits(x, "dispfit"))
+    stopifnot(inherits(x, "Dispfit"))
     print("Distribution parameters")
     print(x$distribution.parameters)
     print("Distribution selection")
