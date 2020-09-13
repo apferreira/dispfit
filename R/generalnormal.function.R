@@ -134,7 +134,7 @@ kurtosis.stderr.generalnormal <- msm::deltamethod(~ ((x1^4 * gamma(6/x2)) / gamm
                                                                                 x=dist.generalnormal.opt$par,
                                                                                 r=data)) )
 # output
-generalnormal.values$res <- data.frame(aic.generalnormal, aicc.generalnormal, bic.generalnormal,
+res <- data.frame(aic.generalnormal, aicc.generalnormal, bic.generalnormal,
                                    chi.squared.statistic.generalnormal, chi.squared.pvalue.generalnormal,g.max.generalnormal, KS.generalnormal,
                                    par.1.generalnormal, par.1.se.generalnormal, par.2.generalnormal, par.2.se.generalnormal,
                                    mean.generalnormal, mean.stderr.generalnormal, variance.generalnormal, variance.stderr.generalnormal,
