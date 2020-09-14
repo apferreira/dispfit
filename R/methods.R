@@ -11,8 +11,17 @@ summary.dispfit <- function(object, ...) {
 #' @export
 print.summary.dispfit <- function(x, ...)
 {
-  print("Distribution parameters")
-  print(x$parameters)
   print("Distribution selection")
   print(x$selection)
+  print("Distribution parameters")
+  print(x$parameters)
+}
+
+#' @export
+print.dispfit <- function(x, ...)
+{
+  print("Distribution selection")
+  print(x$distribution.selection)
+  print("Distribution parameters")
+  print(x$distribution.parameters)
 }
