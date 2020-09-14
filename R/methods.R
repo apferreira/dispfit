@@ -1,9 +1,9 @@
 #' @export
-summary.dispfit <- function(object, ...) {
-  # stopifnot(inherits(x, "dispfit"))
+summary.dispfit <- function(x, ...) {
+  stopifnot(inherits(x, "dispfit"))
   res <- list()
-  res$parameters <- object$distribution.parameters
-  res$selection <- object$distribution.selection
+  res$parameters <- x$distribution.parameters
+  res$selection <- x$distribution.selection
   class(res) <- "summary.dispfit"
   res
 }

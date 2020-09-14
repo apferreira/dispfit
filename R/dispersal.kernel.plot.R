@@ -19,7 +19,7 @@
 #'
 #' dispersal.kernel.plot(test)
 
-dispersal.kernel.plot <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE) {
+plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE) {
   # require("ggplot2")
   # require("reshape2")
 
@@ -381,7 +381,7 @@ dispersal.kernel.plot <- function (data, fit.criteria = NULL, criteria.dif = 2, 
       ggplot2::labs(x = "Distance (m)", y = "Probability", colour = "Distribution")
   }
   else {
-    ggplot2::ggplot() +
+   ggplot2::ggplot() +
       ggplot2::theme_light() +
       ggplot2::geom_line(data = all.sim$melt, ggplot2::aes(x = distance, y = value, colour = variable), lineend = "round") +
       { if(plot.data) ggplot2::stat_density(data = data.frame(x=data$data), ggplot2::aes(x=x), colour = "black", geom = "line", size = 1)} +
