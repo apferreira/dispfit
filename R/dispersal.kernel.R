@@ -33,9 +33,7 @@
 #' ## display table
 #' fit$distribution.selection
 
-dispersal.kernel <- function(x, ...) UseMethod("dispfit")
-
-dispersal.kernel.default <- function (data, distribution = "all", order.by = "AICc", extreme.values = FALSE) {
+dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", extreme.values = FALSE) {
   # require("msm")
   # require("numDeriv")
   kernel.fit <- list()
@@ -529,7 +527,7 @@ dispersal.kernel.default <- function (data, distribution = "all", order.by = "AI
 }
 
 summary.dispfit <- function(object, ...) {
-  # stopifnot(inherits(x, "dispfit"))
+  stopifnot(inherits(x, "dispfit"))
   res$parameters <- object$distribution.parameters
   res$selection <- object$distribution.selection
   class(res) <- "summary.dispfit"
