@@ -25,3 +25,9 @@ print.dispfit <- function(x, ...)
   print("Distribution parameters")
   print(x$distribution.parameters)
 }
+
+#' @export
+AIC.dispfit <- function(x, ...)
+{
+  print(x$distribution.selection[1:7])
+}
