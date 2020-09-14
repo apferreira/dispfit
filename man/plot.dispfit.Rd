@@ -32,7 +32,7 @@ sim <- rexp(100, rate = 0.01)
 
 test <- dispersal.kernel(sim)
 
-dispersal.kernel.plot(test)
+plot(test)
 }
 \seealso{
 \code{\link{dispersal.kernel}}
