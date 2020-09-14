@@ -17,7 +17,7 @@
 #'
 #' test <- dispersal.kernel(sim)
 #'
-#' dispersal.kernel.plot(test)
+#' plot(test)
 
 plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE) {
   # require("ggplot2")
