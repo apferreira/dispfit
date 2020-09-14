@@ -4,12 +4,7 @@
 \alias{dispersal.kernel}
 \title{Dispersal kernels for dispersal data}
 \usage{
-dispersal.kernel(
-  data,
-  distribution = "all",
-  order.by = "AICc",
-  extreme.values = FALSE
-)
+dispersal.kernel(x, ...)
 }
 \arguments{
 \item{data}{A numeric vector of distances.}

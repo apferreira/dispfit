@@ -4,7 +4,7 @@
 \alias{dispersal.kernel.plot}
 \title{Plots from dispersal kernel fit for dispersal data}
 \usage{
-dispersal.kernel.plot(
+\method{dispersal.kernel}{plot}(
   data,
   fit.criteria = NULL,
   criteria.dif = 2,
