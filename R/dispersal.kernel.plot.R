@@ -63,7 +63,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       fgeneralnormal <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r / a) ^ b)
       return(fgeneralnormal)
     }
-    all.sim$generalizednormal <- data.frame(distance = x, generalizednormal = dist.generalnormal(x, data$generalizednormal$par[1], data$generalizednormal$par[2]))
+    all.sim$generalizednormal <- data.frame(distance = x, generalizednormal = dist.generalnormal(x, data$generalnormal$par[1], data$generalizednormal$par[2]))
   }
   if ("2Dt" %in% best.fit) {
     dist.2dt <- function (r, a, b) {
