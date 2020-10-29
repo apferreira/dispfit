@@ -63,7 +63,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       fgeneralnormal <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r / a) ^ b)
       return(fgeneralnormal)
     }
-    all.sim$generalizednormal <- data.frame(distance = x, generalizednormal = dist.generalnormal(x, data$generalnormal$par[1], data$generalizednormal$par[2]))
+    all.sim$generalnormal <- data.frame(distance = x, generalnormal = dist.generalnormal(x, data$generalnormal$par[1], data$generalnormal$par[2]))
   }
   if ("2Dt" %in% best.fit) {
     dist.2dt <- function (r, a, b) {
@@ -147,7 +147,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
   all.sim$melt$variable <- as.character(all.sim$melt$variable)
   all.sim$melt$variable[which(all.sim$melt$variable == "rayleigh")] <- "Rayleigh"
   all.sim$melt$variable[all.sim$melt$variable == "exponential"] <- "Exponential"
-  all.sim$melt$variable[all.sim$melt$variable == "generalizednormal"] <- "Generalized Normal"
+  all.sim$melt$variable[all.sim$melt$variable == "generalnormal"] <- "Generalized Normal"
   all.sim$melt$variable[all.sim$melt$variable == "twodt"] <- "2Dt"
   all.sim$melt$variable[all.sim$melt$variable == "geometric"] <- "Geometric"
   all.sim$melt$variable[all.sim$melt$variable == "logistic"] <- "Logistic"
