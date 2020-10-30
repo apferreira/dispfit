@@ -91,7 +91,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       flognorm <- 2*pi*r * (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
       return(flognorm)
     }
-    all.sim$lognormal <- data.frame(distance = x, lognormal =  dist.lognormal(x, data$lognormal$par[1], data$lognormal$par[2]))
+    all.sim$lognormal <- data.frame(distance = x, lognormal =  dist.lognormal(x, data$lognorm$par[1], data$lognorm$par[2]))
   }
   if ("Wald" %in% best.fit) {
     dist.wald <- function (r, a, b) {
