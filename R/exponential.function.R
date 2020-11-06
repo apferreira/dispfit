@@ -1,10 +1,10 @@
 exponential.function <- function (data, chi.res.hist, ks.res.hist) {
 log.dist.exponential <- function (r, a) {
-  fexponential <- (1 / (2 * pi * a * r )) * exp(-r/a) # corrected function, adapted from Nathan 2012
+  fexponential <- (1 / (2 * pi * a ^ 2 )) * exp(-r/a) # corrected function, adapted from Nathan 2012
   -sum(log(fexponential))
 }
 dist.exponential <- function (r, a) {
-  fexponential <-  2*pi*r*(1 / (2 * pi * a * r )) * exp(-r/a) # corrected function, adapted from Nathan 2012
+  fexponential <-  2*pi*r*(1 / (2 * pi * a ^ 2 )) * exp(-r/a) # corrected function, adapted from Nathan 2012
 }
 # initial values estimation
 rate <- 1/mean(data)

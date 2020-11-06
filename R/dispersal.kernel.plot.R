@@ -53,7 +53,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
   }
   if ("Exponential" %in% best.fit) {
     dist.exponential <- function (r, a) {
-      fexponential <-  2*pi*r*(1 / (2 * pi * a * r )) * exp(-r/a) # corrected function, adapted from Nathan 2012
+      fexponential <-  2*pi*r*(1 / (2 * pi * a ^ 2 )) * exp(-r/a) # corrected function, adapted from Nathan 2012
       return(fexponential)
     }
     all.sim$exponential <- data.frame(distance = x, exponential = dist.exponential(x, data$exponential$par))
