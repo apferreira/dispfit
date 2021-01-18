@@ -163,7 +163,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
   if (isTRUE(envelopes)) {
     n <- 4000
     if ("Rayleigh" %in% best.fit) {
-      a <- rnorm(n,data$values["Rayleigh", "Parameter 1"],data$values["Rayleigh", "Parameter 1 SE"])
+      a <- msm::rtnorm(n, data$values["Rayleigh", "Parameter 1"], data$values["Rayleigh", "Parameter 1 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -180,7 +180,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Rayleigh"] <- dist[.025*m,]
     }
     if ("Exponential" %in% best.fit) {
-      a <- rnorm(n,data$values["Exponential", "Parameter 1"],data$values["Exponential", "Parameter 1 SE"])
+      a <- msm::rtnorm(n,data$values["Exponential", "Parameter 1"],data$values["Exponential", "Parameter 1 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -197,8 +197,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Exponential"] <- dist[.025*m,]
     }
     if ("Generalized Normal" %in% best.fit) {
-      a <- rnorm(n,data$values["Generalized Normal", "Parameter 1"],data$values["Generalized Normal", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Generalized Normal", "Parameter 2"],data$values["Generalized Normal", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 1"],data$values["Generalized Normal", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 2"],data$values["Generalized Normal", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -216,8 +216,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Generalized Normal"] <- dist[.025*m,]
     }
     if ("2Dt" %in% best.fit) {
-      a <- rnorm(n,data$values["2Dt", "Parameter 1"],data$values["2Dt", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["2Dt", "Parameter 2"],data$values["2Dt", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["2Dt", "Parameter 1"],data$values["2Dt", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["2Dt", "Parameter 2"],data$values["2Dt", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -235,8 +235,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "2Dt"] <- dist[.025*m,]
     }
     if ("Geometric" %in% best.fit) {
-      a <- rnorm(n,data$values["Geometric", "Parameter 1"],data$values["Geometric", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Geometric", "Parameter 2"],data$values["Geometric", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Geometric", "Parameter 1"],data$values["Geometric", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Geometric", "Parameter 2"],data$values["Geometric", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -254,8 +254,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Geometric"] <- dist[.025*m,]
     }
     if ("Logistic" %in% best.fit) {
-      a <- rnorm(n,data$values["Logistic", "Parameter 1"],data$values["Logistic", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Logistic", "Parameter 2"],data$values["Logistic", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Logistic", "Parameter 1"],data$values["Logistic", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Logistic", "Parameter 2"],data$values["Logistic", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -273,8 +273,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Logistic"] <- dist[.025*m,]
     }
     if ("Log-Normal" %in% best.fit) {
-      a <- rnorm(n,data$values["Log-Normal", "Parameter 1"],data$values["Log-Normal", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Log-Normal", "Parameter 2"],data$values["Log-Normal", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 1"],data$values["Log-Normal", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 2"],data$values["Log-Normal", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -292,8 +292,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Log-Normal"] <- dist[.025*m,]
     }
     if ("Wald" %in% best.fit) {
-      a <- rnorm(n,data$values["Wald", "Parameter 1"],data$values["Wald", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Wald", "Parameter 2"],data$values["Wald", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Wald", "Parameter 1"],data$values["Wald", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Wald", "Parameter 2"],data$values["Wald", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -311,8 +311,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Wald"] <- dist[.025*m,]
     }
     if ("Weibull" %in% best.fit) {
-      a <- rnorm(n,data$values["Weibull", "Parameter 1"],data$values["Weibull", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Weibull", "Parameter 2"],data$values["Weibull", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Weibull", "Parameter 1"],data$values["Weibull", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Weibull", "Parameter 2"],data$values["Weibull", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -330,8 +330,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Weibull"] <- dist[.025*m,]
     }
     if ("Gamma" %in% best.fit) {
-      a <- rnorm(n,data$values["Gamma", "Parameter 1"],data$values["Gamma", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Gamma", "Parameter 2"],data$values["Gamma", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Gamma", "Parameter 1"],data$values["Gamma", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Gamma", "Parameter 2"],data$values["Gamma", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
@@ -349,8 +349,8 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       all.sim$melt$low95[all.sim$melt$variable == "Gamma"] <- dist[.025*m,]
     }
     if ("Log-sech" %in% best.fit) {
-      a <- rnorm(n,data$values["Log-sech", "Parameter 1"],data$values["Log-sech", "Parameter 1 SE"])
-      b <- rnorm(n,data$values["Log-sech", "Parameter 2"],data$values["Log-sech", "Parameter 2 SE"])
+      a <- msm::rtnorm(n,data$values["Log-sech", "Parameter 1"],data$values["Log-sech", "Parameter 1 SE"], 0, Inf)
+      b <- msm::rtnorm(n,data$values["Log-sech", "Parameter 2"],data$values["Log-sech", "Parameter 2 SE"], 0, Inf)
       dist <- matrix(0,nrow=n,ncol=length(x))
       for(i in 1:n){
         as <- a[i]
