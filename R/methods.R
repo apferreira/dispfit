@@ -33,14 +33,35 @@ AIC.dispfit <- function(x, ...)
 }
 
 #' @export
-predict.dispfit <- function(object, newdata, se.fit = FALSE,
-                             interval = c("none", "confidence", "prediction"),
-                             level = 0.95, type = c("response", "terms"),
-                             terms = NULL, na.action = na.pass,
-                             pred.var = res.var/weights, weights = 1, ...)
+predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
+                            envelopes = TRUE, level = 0.95,
+                            # se.fit = FALSE,
+                            #  interval = c("none", "confidence", "prediction"),
+                            #  type = c("response", "terms"),
+                            #  terms = NULL, na.action = na.pass,
+                            #  pred.var = res.var/weights, weights = 1,
+                            ...)
+{
+  if (is.null(fit.criteria)) {
+    best.fit <- row.names(data$values[1,])
+  } else if ("AIC" %in% fit.criteria) {
+    best.fit <- row.names(data$values[which(data$values$`Delta AIC` < criteria.dif),])
+  } else if ("AICc" %in% fit.criteria) {
+    best.fit <- row.names(data$values[which(data$values$`Delta AICc` < criteria.dif),])
+  } else if ("all" %in% fit.criteria) {
+    best.fit <- row.names(data$values)
+  } else if (is.character(fit.criteria)) {
+    best.fit <- fit.criteria
+  } else if (is.numeric(fit.criteria)) {
+    best.fit <- row.names(data$values[c(1:fit.criteria),])
+  }
+  upr <- 1-(1-level)/2
+  lwr <- (1-level)/2
 
   all.sim <- list()
-x <- 1:floor(max(data$data))
+
+  x <- 1:floor(max(data$data))
+
 if ("Rayleigh" %in% best.fit) {
   dist.rayleigh <- function (r, a) {
     fg <- 2*pi*r*(1/(pi*a^2)) * exp(-r^2/a^2)
@@ -119,24 +140,6 @@ if ("Log-sech" %in% best.fit) {
   all.sim$logsech <- data.frame(distance = x, logsech = dist.logsech(x, data$logsech$par[1], data$logsech$par[2]))
 }
 
-
-all.sim$melt <- reshape2::melt(all.sim, id = "distance")
-all.sim$melt$variable <- as.character(all.sim$melt$variable)
-all.sim$melt$variable[which(all.sim$melt$variable == "rayleigh")] <- "Rayleigh"
-all.sim$melt$variable[all.sim$melt$variable == "exponential"] <- "Exponential"
-all.sim$melt$variable[all.sim$melt$variable == "generalnormal"] <- "Generalized Normal"
-all.sim$melt$variable[all.sim$melt$variable == "twodt"] <- "2Dt"
-all.sim$melt$variable[all.sim$melt$variable == "geometric"] <- "Geometric"
-all.sim$melt$variable[all.sim$melt$variable == "logistic"] <- "Logistic"
-all.sim$melt$variable[all.sim$melt$variable == "lognormal"] <- "Log-Normal"
-all.sim$melt$variable[all.sim$melt$variable == "wald"] <- "Wald"
-all.sim$melt$variable[all.sim$melt$variable == "weibull"] <- "Weibull"
-all.sim$melt$variable[all.sim$melt$variable == "gamma"] <- "Gamma"
-all.sim$melt$variable[all.sim$melt$variable == "logsech"] <- "Log-sech"
-all.sim$melt$variable[all.sim$melt$variable == "cauchy"] <- "Cauchy"
-all.sim$melt$variable[all.sim$melt$variable == "gumbel"] <- "Gumbel"
-all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
-
 ## Calculate Confidence Envelopes
   n <- 4000
   if ("Rayleigh" %in% best.fit) {
@@ -153,8 +156,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Rayleigh Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Rayleigh"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Rayleigh"] <- dist[.025*m,]
+    all.sim$rayleigh$upr <- dist[upr*m,]
+    all.sim$rayleigh$lwr <- dist[lwr*m,]
   }
   if ("Exponential" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Exponential", "Parameter 1"],data$values["Exponential", "Parameter 1 SE"], 0, Inf)
@@ -170,8 +173,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Exponential Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Exponential"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Exponential"] <- dist[.025*m,]
+    all.sim$exponential$upr <- dist[upr*m,]
+    all.sim$exponential$lwr <- dist[lwr*m,]
   }
   if ("Generalized Normal" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 1"],data$values["Generalized Normal", "Parameter 1 SE"], 0, Inf)
@@ -189,8 +192,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Generalized Normal Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Generalized Normal"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Generalized Normal"] <- dist[.025*m,]
+    all.sim$generalnorma$upr <- dist[upr*m,]
+    all.sim$generalnorma$lwr <- dist[lwr*m,]
   }
   if ("2Dt" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["2Dt", "Parameter 1"],data$values["2Dt", "Parameter 1 SE"], 0, Inf)
@@ -208,8 +211,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the 2Dt Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "2Dt"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "2Dt"] <- dist[.025*m,]
+    all.sim$twodt$upr <- dist[upr*m,]
+    all.sim$twodt$lwr <- dist[lwr*m,]
   }
   if ("Geometric" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Geometric", "Parameter 1"],data$values["Geometric", "Parameter 1 SE"], 0, Inf)
@@ -227,8 +230,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m)} # doesn't seem replicable, have to find another solution
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Geometric Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Geometric"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Geometric"] <- dist[.025*m,]
+    all.sim$geometric$upr <- dist[upr*m,]
+    all.sim$geometric$lwr <- dist[lwr*m,]
   }
   if ("Logistic" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Logistic", "Parameter 1"],data$values["Logistic", "Parameter 1 SE"], 0, Inf)
@@ -245,9 +248,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       m <- min(sapply(dist, length))
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
-    if(m < n) message(n-m, ' random distributions were excluded from the Logistic Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Logistic"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Logistic"] <- dist[.025*m,]
+    all.sim$logistic$upr <- dist[upr*m,]
+    all.sim$logistic$lwr <- dist[lwr*m,]
   }
   if ("Log-Normal" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 1"],data$values["Log-Normal", "Parameter 1 SE"], 0, Inf)
@@ -265,8 +267,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Log-Normal Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Log-Normal"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Log-Normal"] <- dist[.025*m,]
+    all.sim$lognormal$upr <- dist[upr*m,]
+    all.sim$lognormal$lwr <- dist[lwr*m,]
   }
   if ("Wald" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Wald", "Parameter 1"],data$values["Wald", "Parameter 1 SE"], 0, Inf)
@@ -284,8 +286,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Wald Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Wald"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Wald"] <- dist[.025*m,]
+    all.sim$wald$upr <- dist[upr*m,]
+    all.sim$wald$lwr <- dist[lwr*m,]
   }
   if ("Weibull" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Weibull", "Parameter 1"],data$values["Weibull", "Parameter 1 SE"], 0, Inf)
@@ -303,8 +305,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Weibull Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Weibull"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Weibull"] <- dist[.025*m,]
+    all.sim$weibull$upr <- dist[upr*m,]
+    all.sim$weibull$lwr <- dist[lwr*m,]
   }
   if ("Gamma" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Gamma", "Parameter 1"],data$values["Gamma", "Parameter 1 SE"], 0, Inf)
@@ -322,8 +324,8 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Gamma Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Gamma"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Gamma"] <- dist[.025*m,]
+    all.sim$gamma$upr <- dist[upr*m,]
+    all.sim$gamma$lwr <- dist[lwr*m,]
   }
   if ("Log-sech" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["Log-sech", "Parameter 1"],data$values["Log-sech", "Parameter 1 SE"], 0, Inf)
@@ -342,11 +344,9 @@ all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Log-sech Distribution confidence envelopes')
-    all.sim$melt$upp95[all.sim$melt$variable == "Log-sech"] <- dist[.975*m,]
-    all.sim$melt$low95[all.sim$melt$variable == "Log-sech"] <- dist[.025*m,]
+    all.sim$logsech$upr <- dist[upr*m,]
+    all.sim$logsech$lwr <- dist[lwr*m,]
   }
-  all.sim$melt$low95[all.sim$melt$low95<0] <- 0
-{
-
-
+  # all.sim$melt$low95[all.sim$melt$low95<0] <- 0
+all.sim
 }

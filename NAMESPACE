@@ -2,6 +2,7 @@
 
 S3method(AIC,dispfit)
 S3method(plot,dispfit)
+S3method(predict,dispfit)
 S3method(print,dispfit)
 S3method(print,summary.dispfit)
 S3method(summary,dispfit)
