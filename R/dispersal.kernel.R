@@ -19,7 +19,7 @@
 #'   \code{distribution.parameters} \tab A table with the estimated parameters and moments for each fitted distribution. \cr
 #' }
 #'
-#' @seealso \code{\link{dispersal.kernel.plot}}
+#' @seealso \code{\link{plot.dispfit}}
 #' @keywords dispersal kernel distribution
 #' @import msm numDeriv stats
 #' @export
