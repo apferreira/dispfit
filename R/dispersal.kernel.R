@@ -11,9 +11,9 @@
 #'  The default is “AICc”, but one can also choose “AIC” or “BIC”.
 #' @param extreme.values Bolean (TRUE/FALSE) to whether “data” is to be fitted with extreme value distributions. Default is FALSE.
 #' @details This function fits one or more dispersal kernels with 1-2 parameters, by estimating the
-#' distribution of kernel parameters (θ∈R) maximizing the likelihood function
+#' distribution of kernel parameters (θ∈R) maximizing the likelihood function.
 #' @return Returns a list with all maximum likelihood calculations for each selected distribution.
-#' Furthermore, two summary tables may be accessed
+#' Furthermore, two summary tables may be accessed.
 #' \tabular{ll}{
 #'   \code{distribution.selection} \tab A table listing the fitted distributions. \cr
 #'   \code{distribution.parameters} \tab A table with the estimated parameters and moments for each fitted distribution. \cr
