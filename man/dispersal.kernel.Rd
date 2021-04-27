@@ -24,7 +24,7 @@ The default is “AICc”, but one can also choose “AIC” or “BIC”.}
 }
 \value{
 Returns a list with all maximum likelihood calculations for each selected distribution.
-Furthermore, two summary tables may be accessed
+Furthermore, two summary tables may be accessed.
 \tabular{ll}{
   \code{distribution.selection} \tab A table listing the fitted distributions. \cr
   \code{distribution.parameters} \tab A table with the estimated parameters and moments for each fitted distribution. \cr
@@ -37,7 +37,7 @@ as well as its Mean, Variance, Skewness, and Kurtosis.
 }
 \details{
 This function fits one or more dispersal kernels with 1-2 parameters, by estimating the
-distribution of kernel parameters (θ∈R) maximizing the likelihood function
+distribution of kernel parameters (θ∈R) maximizing the likelihood function.
 }
 \examples{
 ## simulate data from exponential distribution
@@ -50,7 +50,7 @@ fit <- dispersal.kernel(sim)
 fit$distribution.selection
 }
 \seealso{
-\code{\link{dispersal.kernel.plot}}
+\code{\link{plot.dispfit}}
 }
 \keyword{dispersal}
 \keyword{distribution}
