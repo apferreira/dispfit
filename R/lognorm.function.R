@@ -61,6 +61,9 @@ mean.stderr.lognorm <- msm::deltamethod(~ x1 * exp((x2^2)/2), mean = dist.lognor
 # variance
 variance.lognorm <- (exp(dist.lognorm.opt$par[2]^2)-1) * dist.lognorm.opt$par[1]^2 * exp(dist.lognorm.opt$par[2]^2)
 variance.stderr.lognorm <- msm::deltamethod(~ (exp(x2^2)-1) * x1^2 * exp(x2^2), mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)))
+# standard deviation
+stdev.lognorm <- sqrt((exp(dist.lognorm.opt$par[2]^2)-1) * dist.lognorm.opt$par[1]^2 * exp(dist.lognorm.opt$par[2]^2))
+stdev.stderr.lognorm <- msm::deltamethod(~ sqrt((exp(x2^2)-1) * x1^2 * exp(x2^2)), mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)))
 # skewness
 skewness.lognorm <- (exp(dist.lognorm.opt$par[2]^2)+2) * sqrt(exp(dist.lognorm.opt$par[2]^2)-1)
 skewness.stderr.lognorm <- msm::deltamethod(~ (exp(x2^2)+2) * sqrt(exp(x2^2)-1), mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)) )
@@ -71,7 +74,7 @@ kurtosis.stderr.lognorm <- msm::deltamethod(~ exp(4*x2^2) + 2*exp(3*x2^2) + 3*ex
 res <- data.frame(aic.lognorm, aicc.lognorm, bic.lognorm,
                              chi.squared.statistic.lognorm, chi.squared.pvalue.lognorm,g.max.lognorm, KS.lognorm,
                              par.1.lognorm, par.1.se.lognorm, par.2.lognorm, par.2.se.lognorm,
-                             mean.lognorm, mean.stderr.lognorm, variance.lognorm, variance.stderr.lognorm,
+                             mean.lognorm, mean.stderr.lognorm, stdev.lognorm, stdev.stderr.lognorm,
                              skewness.lognorm, skewness.stderr.lognorm, kurtosis.lognorm, kurtosis.stderr.lognorm)
 lognorm.values <- list("opt" = dist.lognorm.opt, "res" = res)
 }

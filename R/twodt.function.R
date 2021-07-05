@@ -136,7 +136,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   res <- data.frame(aic.2dt, aicc.2dt, bic.2dt,
                              chi.squared.statistic.2dt, chi.squared.pvalue.2dt,g.max.2dt, KS.2dt,
                              par.1.2dt, par.1.se.2dt, par.2.2dt, par.2.se.2dt,
-                             mean.2dt, mean.stderr.2dt, variance.2dt, variance.stderr.2dt,
+                             mean.2dt, mean.stderr.2dt, stdev.2dt, stdev.stderr.2dt,
                     skewness.2dt, skewness.stderr.2dt, kurtosis.2dt, kurtosis.stderr.2dt)
 twodt.values <- list("opt" = dist.2dt.opt, "res" = res)
 }

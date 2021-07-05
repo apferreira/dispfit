@@ -146,7 +146,7 @@ if (dist.geometric.opt$par[2] >= 6) {
 res <- data.frame(aic.geometric, aicc.geometric, bic.geometric,
                                chi.squared.statistic.geometric, chi.squared.pvalue.geometric,g.max.geometric, KS.geometric,
                                par.1.geometric, par.1.se.geometric, par.2.geometric, par.2.se.geometric,
-                               mean.geometric, mean.stderr.geometric, variance.geometric, variance.stderr.geometric,
+                               mean.geometric, mean.stderr.geometric, stdev.geometric, stdev.stderr.geometric,
                                skewness.geometric, skewness.stderr.geometric, kurtosis.geometric, kurtosis.stderr.geometric)
 geometric.values <- list("opt" = dist.geometric.opt, "res" = res)
 }

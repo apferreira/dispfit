@@ -64,6 +64,10 @@ mean.stderr.weibull <- msm::deltamethod(~ x1 * (gamma(1 + 1/x2)), mean = dist.we
 variance.weibull <- dist.weibull.opt$par[1]^2*(gamma(1+2/dist.weibull.opt$par[2])-gamma(1+1/dist.weibull.opt$par[2])^2)
 variance.stderr.weibull <- msm::deltamethod(~ x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2), mean = dist.weibull.opt$par,
                                             cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data)) )
+# standard deviation
+stdev.weibull <- sqrt(dist.weibull.opt$par[1]^2*(gamma(1+2/dist.weibull.opt$par[2])-gamma(1+1/dist.weibull.opt$par[2])^2))
+stdev.stderr.weibull <- msm::deltamethod(~ sqrt(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2)), mean = dist.weibull.opt$par,
+                                            cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data)) )
 # skewness
 skewness.weibull <- (dist.weibull.opt$par[1]^3*gamma(1+3/dist.weibull.opt$par[2])-3*mean.weibull*variance.weibull-mean.weibull^3)/variance.weibull^(3/2)
 skewness.stderr.weibull <- msm::deltamethod(~ (x1^3*gamma(1+3/x2)-3*(x1 * (gamma(1 + 1/x2)))*(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))-(x1 * (gamma(1 + 1/x2)))^3)/(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^(3/2),
@@ -78,7 +82,7 @@ kurtosis.stderr.weibull <- msm::deltamethod(~ (x1^4*gamma(1+4/x2) - 4 * ((x1^3*g
 res <- data.frame(aic.weibull, aicc.weibull, bic.weibull,
                              chi.squared.statistic.weibull, chi.squared.pvalue.weibull,g.max.weibull, KS.weibull,
                              par.1.weibull, par.1.se.weibull, par.2.weibull, par.2.se.weibull,
-                             mean.weibull, mean.stderr.weibull, variance.weibull, variance.stderr.weibull,
+                             mean.weibull, mean.stderr.weibull, stdev.weibull, stdev.stderr.weibull,
                              skewness.weibull, skewness.stderr.weibull, kurtosis.weibull, kurtosis.stderr.weibull)
 weibull.values <- list("opt" = dist.weibull.opt, "res" = res)
 }

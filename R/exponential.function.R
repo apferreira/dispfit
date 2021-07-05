@@ -71,7 +71,7 @@ kurtosis.stderr.exponential <- NA
 res <- data.frame(aic.exponential, aicc.exponential, bic.exponential,
                                  chi.squared.statistic.exponential, chi.squared.pvalue.exponential, g.max.exponential, KS.exponential,
                                  par.1.exponential, par.1.se.exponential, par.2.exponential, par.2.se.exponential,
-                                 mean.exponential, mean.stderr.exponential, variance.exponential, variance.stderr.exponential,
+                                 mean.exponential, mean.stderr.exponential, stdev.exponential, stdev.stderr.exponential,
                                  skewness.exponential, skewness.stderr.exponential, kurtosis.exponential, kurtosis.stderr.exponential)
 exponential.values <- list("opt" = dist.exponential.opt, "res" = res)
 }

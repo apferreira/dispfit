@@ -65,6 +65,11 @@ variance.gamma <- dist.gamma.opt$par[1]^2 * dist.gamma.opt$par[2]
 variance.stderr.gamma <- msm::deltamethod(~ x2*x1^2,
                                           mean = dist.gamma.opt$par,
                                           cov = solve(numDeriv::hessian(log.dist.gamma, x=dist.gamma.opt$par, r=data)) )
+# standard deviation
+stdev.gamma <- sqrt(dist.gamma.opt$par[1]^2 * dist.gamma.opt$par[2])
+stdev.stderr.gamma <- msm::deltamethod(~ sqrt(x2*x1^2),
+                                          mean = dist.gamma.opt$par,
+                                          cov = solve(numDeriv::hessian(log.dist.gamma, x=dist.gamma.opt$par, r=data)) )
 # skewness
 skewness.gamma <- 2/sqrt(dist.gamma.opt$par[2])
 skewness.stderr.gamma <- msm::deltamethod(~ 2/sqrt(x2),
@@ -79,7 +84,7 @@ kurtosis.stderr.gamma <- msm::deltamethod(~ 6/x2,
 res <- data.frame(aic.gamma, aicc.gamma, bic.gamma,
                            chi.squared.statistic.gamma, chi.squared.pvalue.gamma,g.max.gamma, KS.gamma,
                            par.1.gamma, par.1.se.gamma, par.2.gamma, par.2.se.gamma,
-                           mean.gamma, mean.stderr.gamma, variance.gamma, variance.stderr.gamma,
+                           mean.gamma, mean.stderr.gamma, stdev.gamma, stdev.stderr.gamma,
                            skewness.gamma, skewness.stderr.gamma, kurtosis.gamma, kurtosis.stderr.gamma)
 gamma.values <- list("opt" = dist.gamma.opt, "res" = res)
 }

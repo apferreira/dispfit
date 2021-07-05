@@ -69,7 +69,7 @@ kurtosis.stderr.rayleigh <- msm::deltamethod(~ (2*x1^4) / (( (4-pi) * (x1^2) )/4
 res <- data.frame(aic.rayleigh, aicc.rayleigh, bic.rayleigh,
                               chi.squared.statistic.rayleigh, chi.squared.pvalue.rayleigh, ks.d.rayleigh, ks.p.rayleigh,
                               par.1.rayleigh, par.1.se.rayleigh, par.2.rayleigh, par.2.se.rayleigh,
-                              mean.rayleigh, mean.stderr.rayleigh, variance.rayleigh, variance.stderr.rayleigh,
+                              mean.rayleigh, mean.stderr.rayleigh, stdev.rayleigh, stdev.stderr.rayleigh,
                               skewness.rayleigh, skewness.stderr.rayleigh, kurtosis.rayleigh, kurtosis.stderr.rayleigh)
 rayleigh.values <- list("opt" = dist.rayleigh.opt, "res" = res)
 }
