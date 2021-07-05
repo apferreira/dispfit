@@ -50,7 +50,7 @@
 #' \item{Generalized Normal}{\deqn{f(r) = (b/(2\pi (a^2) \Gamma(2/b))) exp(-(r/a)^b)}}
 #' \item{Bivariate Student’s t (2\emph{Dt)}}{\deqn{f(r) =  ((b-1) / (\pi (a^2))) ((1 + (r^2)/(a^2))^(-b))}}
 #' \item{Geometric}{\deqn{f(r) = (((b - 2)(b - 1)) / (2\pi (a^2))) ((1 + (r / a)) ^ -b)}}
-#' \item{Logistic}{\deqn{f(r) = (b / (2\pi (a^2) \Gamma(2/b) \Gamma(1-(2/b)) )) ((1 + ((r^b) / (a^b)))^(-1))}}
+#' item{Logistic}{\deqn{f(r) = (b / (2\pi (a^2) \Gamma(2/b) \Gamma(1-(2/b)) )) ((1 + ((r^b) / (a^b)))^(-1))}}
 #' \item{Lognormal}{\deqn{f(r) = (1 / (((2\pi) ^ (3/2)) (b (r ^ 2)))) exp(-(log(r / a)^2) / (2 * (b ^ 2)))}}
 #' \item{Wald}{\deqn{f(r) = (\sqrt(b)/\sqrt(8 (\pi^3) (r^5))) exp(-(b ((r - a)^2))/(2 (a^2) * r))}}
 #' \item{Weibull}{\deqn{f(r) = (b/(2\pi a^b)) (r^(b-2)) exp(-(r^b/a^b))}}
