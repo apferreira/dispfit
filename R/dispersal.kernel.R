@@ -42,7 +42,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
                                                                  "Parameter 1", "Parameter 1 SE",
                                                                  "Parameter 2", "Parameter 2 SE",
                                                                  "Mean", "Mean SE",
-                                                                 "Variance", "Variance SE",
+                                                                 "Standard Deviation", "Standard Deviation SE",
                                                                  "Skewness", "Skewness SE",
                                                                  "Kurtosis", "Kurtosis SE"))
 
