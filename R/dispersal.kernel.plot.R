@@ -1,8 +1,8 @@
 #' Plots from dispersal kernel fit for dispersal data
 #'
-#' Plots the distributions previously fitted by dispersal.kernel against the data density plot.
+#' Plots the distributions previously fitted by \code{\link{dispersal.kernel}} against the data density plot.
 #'
-#' @param data Output object from the {\link{dispersal.kernel}} function.
+#' @param data Output object from the \code{\link{dispersal.kernel}} function.
 #' @param fit.criteria Either a numeric value referring to the number of distributions to plot (ordered according to the order.by argument from dispersal.kernel); a character string choosing to plot “all” distributions, to plot the distributions with an “AIC”, “AICc”, or “BIC” difference to the top distribution bellow the number set by criteria.dif, or to plot specific distributions. By default, only the top distribution is plotted.
 #' @param criteria.dif A numeric value used when “AIC”, “AICc”, or "BIC" are also selected in fit.criteria. Its value refers to the estimator difference to the top distribution. Only distributions with their estimator difference to the top model falling below this value will be plotted. The default is 2.
 #' @param envelopes A boolean (TRUE/FALSE) value choosing whether to plot the confidence envelopes associated with each distribution. Default is TRUE.

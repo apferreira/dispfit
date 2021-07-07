@@ -22,7 +22,7 @@
 #' dispfit includes two main functions:
 #' \tabular{ll}{
 #'   \code{\link{dispersal.kernel}} \tab Fits several pre-defined distributions to dispersal or movement data. \cr
-#'   \code{\link{dispersal.kernel.plot}} \tab Plots the distributions previously fitted by dispersal.kernel. \cr
+#'   \code{\link{plot.dispfit}} \tab Plots the distributions previously fitted by dispersal.kernel. \cr
 #' }
 #'
 #' @section Distributions:
@@ -58,7 +58,7 @@
 #' \item{Log-sech}{\deqn{f(r) = (1 / ((\pi^2) b (r^2))) / (((r / a)^(1 / b)) + ((r / a) ^ -(1 / b)))}}
 #' }
 #'
-#'
 #' @author António Proença-Ferreira, \email{antoniomiguelpferreira@@gmail.com}
 #' @docType package
-#' @name dispfit
+"_PACKAGE"
+#> [1] "_PACKAGE"

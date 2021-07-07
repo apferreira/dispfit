@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{data}{Output object from the {\link{dispersal.kernel}} function.}
+\item{data}{Output object from the \code{\link{dispersal.kernel}} function.}
 
 \item{fit.criteria}{Either a numeric value referring to the number of distributions to plot (ordered according to the order.by argument from dispersal.kernel); a character string choosing to plot “all” distributions, to plot the distributions with an “AIC”, “AICc”, or “BIC” difference to the top distribution bellow the number set by criteria.dif, or to plot specific distributions. By default, only the top distribution is plotted.}
 
@@ -24,7 +24,7 @@
 \item{plot.data}{A boolean (TRUE/FALSE) value selecting to plot the density of the data.}
 }
 \description{
-Plots the distributions previously fitted by dispersal.kernel against the data density plot.
+Plots the distributions previously fitted by \code{\link{dispersal.kernel}} against the data density plot.
 }
 \examples{
 
