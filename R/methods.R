@@ -192,8 +192,8 @@ if ("Log-sech" %in% best.fit) {
       dist <- sapply(dist, '[', 1:m) }
     m <- length(dist)/length(x)
     if(m < n) message(n-m, ' random distributions were excluded from the Generalized Normal Distribution confidence envelopes')
-    all.sim$generalnorma$upr <- dist[upr*m,]
-    all.sim$generalnorma$lwr <- dist[lwr*m,]
+    all.sim$generalnormal$upr <- dist[upr*m,]
+    all.sim$generalnormal$lwr <- dist[lwr*m,]
   }
   if ("2Dt" %in% best.fit) {
     a <- msm::rtnorm(n,data$values["2Dt", "Parameter 1"],data$values["2Dt", "Parameter 1 SE"], 0, Inf)
