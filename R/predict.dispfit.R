@@ -41,6 +41,8 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
   } else if (is.numeric(fit.criteria)) {
     best.fit <- row.names(data$values[c(1:fit.criteria),])
   }
+
+  if (level > 1 || level < 0) {stop('value for level must be between 0 and 1')}
   upr <- 1-(1-level)/2
   lwr <- (1-level)/2
 
@@ -127,6 +129,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
   }
 
   ## Calculate Confidence Envelopes
+  if (isTRUE(envelopes)) {
   n <- 4000
   if ("Rayleigh" %in% best.fit) {
     a <- msm::rtnorm(n, data$values["Rayleigh", "Parameter 1"], data$values["Rayleigh", "Parameter 1 SE"], 0, Inf)
@@ -332,6 +335,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     if(m < n) message(n-m, ' random distributions were excluded from the Log-sech Distribution confidence envelopes')
     all.sim$logsech$upr <- dist[upr*m,]
     all.sim$logsech$lwr <- dist[lwr*m,]
+  }
   }
   # all.sim$melt$low95[all.sim$melt$low95<0] <- 0
   all.sim
