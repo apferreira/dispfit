@@ -84,6 +84,48 @@ par.2.logistic <- dist.logistic.opt$par[2]
 # parameter estimate standard error
 par.1.se.logistic <- sqrt(diag(solve(numDeriv::hessian(log.dist.logistic, x=dist.logistic.opt$par, r=data))))[1]
 par.2.se.logistic <- sqrt(diag(solve(numDeriv::hessian(log.dist.logistic, x=dist.logistic.opt$par, r=data))))[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.logistic - n.se * par.1.se.logistic
+par.1.fin <- par.1.logistic + n.se * par.1.se.logistic
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.logistic, par = par.2.logistic, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.2dt.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.logistic.opt$value + qchisq(0.95, 1)/2)$y
+par.1.2dt.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.logistic.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.logistic - n.se * par.2.se.logistic
+par.2.fin <- par.2.logistic + n.se * par.2.se.logistic
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.logistic, par = par.1.logistic, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.2dt.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.logistic.opt$value + qchisq(0.95, 1)/2)$y
+par.2.2dt.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.logistic.opt$value + qchisq(0.95, 1)/2)$y
 # mean dispersal distance
 mean.logistic <- dist.logistic.opt$par[1] * (( gamma(3/dist.logistic.opt$par[2]) * gamma(1-(3/dist.logistic.opt$par[2])) ) /
                                                ( gamma(2/dist.logistic.opt$par[2]) * gamma(1-(2/dist.logistic.opt$par[2])) ) )

@@ -39,8 +39,8 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   kernel.fit <- list()
   values <- setNames(data.frame(matrix(ncol = 19, nrow = 1)),  c("AIC", "AICc", "BIC", "Chi-squared value", "Chi-squared significance",
                                                                  "Kolmogorov-Smirnov value", "K-S significance",
-                                                                 "Parameter 1", "Parameter 1 SE",
-                                                                 "Parameter 2", "Parameter 2 SE",
+                                                                 "Parameter 1", "Parameter 1 lower CI", "Parameter 1 upper CI",
+                                                                 "Parameter 2", "Parameter 2 lower CI", "Parameter 2 upper CI",
                                                                  "Mean", "Mean SE",
                                                                  "Standard Deviation", "Standard Deviation SE",
                                                                  "Skewness", "Skewness SE",

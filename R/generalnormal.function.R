@@ -96,10 +96,58 @@ par.2.generalnormal <- dist.generalnormal.opt$par[2]
 # parameter estimate standard error
 par.1.se.generalnormal <- sqrt(diag(solve(numDeriv::hessian(log.dist.generalnormal, x=dist.generalnormal.opt$par, r=data))))[1]
 par.2.se.generalnormal <- sqrt(diag(solve(numDeriv::hessian(log.dist.generalnormal, x=dist.generalnormal.opt$par, r=data))))[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.generalnormal - n.se * par.1.se.generalnormal
+if (par.1.ini <= 0) {
+  par.1.ini <- 0.1
+}
+par.1.fin <- par.1.generalnormal + n.se * par.1.se.generalnormal
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.generalnormal, par = par.2.generalnormal, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.generalnormal.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
+par.1.generalnormal.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.generalnormal - n.se * par.2.se.generalnormal
+if (par.2.ini <= 0) {
+  par.2.ini <- 0.1
+}
+par.2.fin <- par.2.generalnormal + n.se * par.2.se.generalnormal
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.generalnormal, par = par.1.generalnormal, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.generalnormal.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
+par.2.generalnormal.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
 # mean dispersal distance
 mean.generalnormal <- dist.generalnormal.opt$par[1] * (gamma(3/dist.generalnormal.opt$par[2])/gamma(2/dist.generalnormal.opt$par[2]))
 mean.stderr.generalnormal <- msm::deltamethod(~ x1 * (gamma(3/x2)/gamma(2/x2)),
-                                              mean = dist.generalnormal.opt$par,
+                                              mean = dist.generalnormal.opst$par,
                                               cov = solve(numDeriv::hessian(log.dist.generalnormal,
                                                                             x=dist.generalnormal.opt$par,
                                                                             r=data)) )
@@ -136,7 +184,8 @@ kurtosis.stderr.generalnormal <- msm::deltamethod(~ ((x1^4 * gamma(6/x2)) / gamm
 # output
 res <- data.frame(aic.generalnormal, aicc.generalnormal, bic.generalnormal,
                                    chi.squared.statistic.generalnormal, chi.squared.pvalue.generalnormal,g.max.generalnormal, KS.generalnormal,
-                                   par.1.generalnormal, par.1.se.generalnormal, par.2.generalnormal, par.2.se.generalnormal,
+                                   par.1.generalnormal, par.1.generalnormal.CIlow, par.1.generalnormal.CIupp,
+                                   par.2.generalnormal, par.2.generalnormal.CIlow, par.2.generalnormal.CIupp,
                                    mean.generalnormal, mean.stderr.generalnormal, stdev.generalnormal, stdev.stderr.generalnormal,
                                    skewness.generalnormal, skewness.stderr.generalnormal, kurtosis.generalnormal, kurtosis.stderr.generalnormal)
 generalnormal.values <- list("opt" = dist.generalnormal.opt, "res" = res)

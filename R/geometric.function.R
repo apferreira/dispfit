@@ -77,6 +77,49 @@ par.2.geometric <- dist.geometric.opt$par[2]
 # parameter estimate standard error
 par.1.se.geometric <- sqrt(diag(solve(numDeriv::hessian(log.dist.geometric, x=dist.geometric.opt$par, r=data))))[1]
 par.2.se.geometric <- sqrt(diag(solve(numDeriv::hessian(log.dist.geometric, x=dist.geometric.opt$par, r=data))))[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.geometric - n.se * par.1.se.geometric
+par.1.fin <- par.1.geometric + n.se * par.1.se.geometric
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.geometric, par = par.2.geometric, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.geometric.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.geometric.opt$value + qchisq(0.95, 1)/2)$y
+par.1.geometric.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.geometric.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.geometric - n.se * par.2.se.geometric
+par.2.fin <- par.2.geometric + n.se * par.2.se.geometric
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.geometric, par = par.1.geometric, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+plot(par.2.est,par.2.prof, type="l")
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.geometric.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.geometric.opt$value + qchisq(0.95, 1)/2)$y
+par.2.geometric.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.geometric.opt$value + qchisq(0.95, 1)/2)$y
 # mean dispersal distance
 if (dist.geometric.opt$par[2] >= 3) {
   mean.geometric <- (2 * dist.geometric.opt$par[1]) / (dist.geometric.opt$par[2]-3)
@@ -145,7 +188,7 @@ if (dist.geometric.opt$par[2] >= 6) {
 # output
 res <- data.frame(aic.geometric, aicc.geometric, bic.geometric,
                                chi.squared.statistic.geometric, chi.squared.pvalue.geometric,g.max.geometric, KS.geometric,
-                               par.1.geometric, par.1.se.geometric, par.2.geometric, par.2.se.geometric,
+                               par.1.geometric, par.1.geometric.CIlow, par.1.geometric.CIupp, par.2.geometric, par.2.geometric.CIlow, par.2.geometric.CIupp,
                                mean.geometric, mean.stderr.geometric, stdev.geometric, stdev.stderr.geometric,
                                skewness.geometric, skewness.stderr.geometric, kurtosis.geometric, kurtosis.stderr.geometric)
 geometric.values <- list("opt" = dist.geometric.opt, "res" = res)

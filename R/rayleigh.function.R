@@ -50,6 +50,30 @@ par.1.se.rayleigh <- sqrt(diag(solve(numDeriv::hessian(log.dist.rayleigh, x=dist
 #                       lower = 0.000001, ## lower-bound for parameter
 #                       upper = 100000)$par))
 par.2.se.rayleigh <- NA
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.rayleigh - n.se * par.1.se.rayleigh
+par.1.fin <- par.1.rayleigh + n.se * par.1.se.rayleigh
+par.1.est <- seq(par.1.ini , par.1.fin, length.out = len)
+
+par.1.prof = numeric(1000)
+for (i in 1:1000) {
+  par.1.prof[i] = log.dist.rayleigh(a = par.1.est[i],
+                                    r = data)
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.rayleigh.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.rayleigh.opt$value + qchisq(0.95, 1)/2)$y
+par.1.rayleigh.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.rayleigh.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.rayleigh.CIlow <- NA
+par.2.rayleigh.CIupp <- NA
 # mean
 mean.rayleigh <- dist.rayleigh.opt$par*sqrt(pi)/2
 mean.stderr.rayleigh <- msm::deltamethod(~ x1 * sqrt(pi) / 2, mean = dist.rayleigh.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.rayleigh.opt$par, r=data)))
@@ -68,7 +92,7 @@ kurtosis.stderr.rayleigh <- msm::deltamethod(~ (2*x1^4) / (( (4-pi) * (x1^2) )/4
 # output
 res <- data.frame(aic.rayleigh, aicc.rayleigh, bic.rayleigh,
                               chi.squared.statistic.rayleigh, chi.squared.pvalue.rayleigh, ks.d.rayleigh, ks.p.rayleigh,
-                              par.1.rayleigh, par.1.se.rayleigh, par.2.rayleigh, par.2.se.rayleigh,
+                              par.1.rayleigh, par.1.rayleigh.CIlow, par.1.rayleigh.CIupp, par.2.rayleigh, par.2.rayleigh.CIlow, par.2.rayleigh.CIupp,
                               mean.rayleigh, mean.stderr.rayleigh, stdev.rayleigh, stdev.stderr.rayleigh,
                               skewness.rayleigh, skewness.stderr.rayleigh, kurtosis.rayleigh, kurtosis.stderr.rayleigh)
 rayleigh.values <- list("opt" = dist.rayleigh.opt, "res" = res)

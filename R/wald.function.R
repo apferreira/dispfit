@@ -52,6 +52,50 @@ KS.wald <- as.numeric(ks.wald$p.value)
 # parameter estimate
 par.1.wald <- dist.wald.opt$par[1]
 par.2.wald <- dist.wald.opt$par[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.wald - n.se * par.1.se.wald
+par.1.fin <- par.1.wald + n.se * par.1.se.wald
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.wald, par = par.2.wald, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+plot(par.1.est,par.1.prof, type="l")
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.wald.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
+par.1.wald.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.wald - n.se * par.2.se.wald
+par.2.fin <- par.2.wald + n.se * par.2.se.wald
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.wald, par = par.1.wald, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+plot(par.2.est,par.2.prof, type="l")
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.wald.CIlow <- aapprox(prof.lower, prof.par.2.lower, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
+par.2.wald.CIupp <- aapprox(prof.upper, prof.par.2.upper, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
 # parameter estimate standard error
 par.1.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[1]
 par.2.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[2]
@@ -73,7 +117,7 @@ kurtosis.stderr.wald <- msm::deltamethod(~ (15*x1)/x2, mean = dist.wald.opt$par,
 # output
 res <- data.frame(aic.wald, aicc.wald, bic.wald,
                           chi.squared.statistic.wald, chi.squared.pvalue.wald,g.max.wald, KS.wald,
-                          par.1.wald, par.1.se.wald, par.2.wald, par.2.se.wald,
+                          par.1.wald, par.1.wald.CIlow, par.1.wald.CIupp, par.2.wald, par.2.wald.CIlow, par.2.wald.CIupp,
                           mean.wald, mean.stderr.wald, stdev.wald, stdev.stderr.wald,
                           skewness.wald, skewness.stderr.wald, kurtosis.wald, kurtosis.stderr.wald)
 wald.values <- list("opt" = dist.wald.opt, "res" = res)

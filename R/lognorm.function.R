@@ -52,6 +52,48 @@ KS.lognorm <- as.numeric(ks.lognorm$p.value)
 # parameter estimate
 par.1.lognorm <- dist.lognorm.opt$par[1]
 par.2.lognorm <- dist.lognorm.opt$par[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.lognorm - n.se * par.1.se.lognorm
+par.1.fin <- par.1.lognorm + n.se * par.1.se.lognorm
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.lognorm, par = par.2.lognorm, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.lognorm.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
+par.1.lognorm.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.lognorm - n.se * par.2.se.lognorm
+par.2.fin <- par.2.lognorm + n.se * par.2.se.lognorm
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.lognorm, par = par.1.lognorm, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.lognorm.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
+par.2.lognorm.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
 # parameter estimate standard error
 par.1.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[1]
 par.2.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[2]
@@ -73,7 +115,8 @@ kurtosis.stderr.lognorm <- msm::deltamethod(~ exp(4*x2^2) + 2*exp(3*x2^2) + 3*ex
 # output
 res <- data.frame(aic.lognorm, aicc.lognorm, bic.lognorm,
                              chi.squared.statistic.lognorm, chi.squared.pvalue.lognorm,g.max.lognorm, KS.lognorm,
-                             par.1.lognorm, par.1.se.lognorm, par.2.lognorm, par.2.se.lognorm,
+                             par.1.lognorm, par.1.lognorm.CIlow, par.1.lognorm.CIupp,
+                             par.2.lognorm, par.2.lognorm.CIlow, par.2.lognorm.CIupp,
                              mean.lognorm, mean.stderr.lognorm, stdev.lognorm, stdev.stderr.lognorm,
                              skewness.lognorm, skewness.stderr.lognorm, kurtosis.lognorm, kurtosis.stderr.lognorm)
 lognorm.values <- list("opt" = dist.lognorm.opt, "res" = res)

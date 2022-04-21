@@ -55,6 +55,48 @@ par.2.gamma <- dist.gamma.opt$par[2]
 # parameter estimate standard error
 par.1.se.gamma <- sqrt(diag(solve(numDeriv    ::hessian(log.dist.gamma, x=dist.gamma.opt$par, r=data))))[1]
 par.2.se.gamma <- sqrt(diag(solve(numDeriv::hessian(log.dist.gamma, x=dist.gamma.opt$par, r=data))))[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.gamma - n.se * par.1.se.gamma
+par.1.fin <- par.1.gamma + n.se * par.1.se.gamma
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.gamma, par = par.2.gamma, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.gamma.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
+par.1.gamma.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.gamma - n.se * par.2.se.gamma
+par.2.fin <- par.2.gamma + n.se * par.2.se.gamma
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.gamma, par = par.1.gamma, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.gamma.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
+par.2.gamma.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
 # mean dispersal distance
 mean.gamma <- dist.gamma.opt$par[1] * dist.gamma.opt$par[2]
 mean.stderr.gamma <- msm::deltamethod(~ x1 * x2,
@@ -83,7 +125,7 @@ kurtosis.stderr.gamma <- msm::deltamethod(~ 6/x2,
 # output
 res <- data.frame(aic.gamma, aicc.gamma, bic.gamma,
                            chi.squared.statistic.gamma, chi.squared.pvalue.gamma,g.max.gamma, KS.gamma,
-                           par.1.gamma, par.1.se.gamma, par.2.gamma, par.2.se.gamma,
+                           par.1.gamma, par.1.gamma.CIlow, par.1.gamma.CIupp, par.2.gamma, par.2.gamma.CIlow, par.2.gamma.CIupp,
                            mean.gamma, mean.stderr.gamma, stdev.gamma, stdev.stderr.gamma,
                            skewness.gamma, skewness.stderr.gamma, kurtosis.gamma, kurtosis.stderr.gamma)
 gamma.values <- list("opt" = dist.gamma.opt, "res" = res)

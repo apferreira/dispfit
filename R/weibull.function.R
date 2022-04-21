@@ -57,6 +57,48 @@ par.2.weibull <- dist.weibull.opt$par[2]
 # parameter estimate standard error
 par.1.se.weibull <- sqrt(diag(solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data))))[1]
 par.2.se.weibull <- sqrt(diag(solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data))))[2]
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.weibull - n.se * par.1.se.weibull
+par.1.fin <- par.1.weibull + n.se * par.1.se.weibull
+par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = optim(log.dist.weibull, par = par.2.weibull, a = par.1.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.weibull.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
+par.1.weibull.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.ini <- par.2.weibull - n.se * par.2.se.weibull
+par.2.fin <- par.2.weibull + n.se * par.2.se.weibull
+par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+
+par.2.prof = numeric(len)
+for (i in 1:len) {
+  par.2.prof[i] = optim(log.dist.weibull, par = par.1.weibull, b = par.2.est[i],
+                        r = data,
+                        method = "Nelder-Mead")$value
+}
+
+prof.lower = par.2.prof[1:which.min(par.2.prof)]
+prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
+
+prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+
+par.2.weibull.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
+par.2.weibull.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
 # mean dispersal distance ## from Austerlitz 2004
 mean.weibull <- dist.weibull.opt$par[1] * (gamma(1 + 1/dist.weibull.opt$par[2]))
 mean.stderr.weibull <- msm::deltamethod(~ x1 * (gamma(1 + 1/x2)), mean = dist.weibull.opt$par, cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data)) )
@@ -81,7 +123,7 @@ kurtosis.stderr.weibull <- msm::deltamethod(~ (x1^4*gamma(1+4/x2) - 4 * ((x1^3*g
 # output
 res <- data.frame(aic.weibull, aicc.weibull, bic.weibull,
                              chi.squared.statistic.weibull, chi.squared.pvalue.weibull,g.max.weibull, KS.weibull,
-                             par.1.weibull, par.1.se.weibull, par.2.weibull, par.2.se.weibull,
+                             par.1.weibull, par.1.weibull.CIlow, par.1.weibull.CIupp, par.2.weibull, par.2.weibull.CIlow, par.2.weibull.CIupp,
                              mean.weibull, mean.stderr.weibull, stdev.weibull, stdev.stderr.weibull,
                              skewness.weibull, skewness.stderr.weibull, kurtosis.weibull, kurtosis.stderr.weibull)
 weibull.values <- list("opt" = dist.weibull.opt, "res" = res)

@@ -52,6 +52,30 @@ par.2.exponential <- NA
 # parameter estimate standard error
 par.1.se.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.exponential.opt$par, r=data))))
 par.2.se.exponential <- NA
+# parameter estimate confidence intervals
+n.se <- 30
+len <- 1000
+par.1.ini <- par.1.exponential - n.se * par.1.se.exponential
+par.1.fin <- par.1.exponential + n.se * par.1.se.exponential
+par.1.est <- seq(par.1.ini , par.1.fin, length = len)
+
+par.1.prof = numeric(len)
+for (i in 1:len) {
+  par.1.prof[i] = log.dist.exponential(a = par.1.est[i],
+                                       r = data)
+}
+
+prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+
+prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+
+par.1.exponential.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.exponential.opt$value + qchisq(0.95, 1)/2)$y
+par.1.exponential.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.exponential.opt$value + qchisq(0.95, 1)/2)$y
+
+par.2.exponential.CIlow <- NA
+par.2.exponential.CIupp <- NA
 # mean dispersal distance
 mean.exponential <- dist.exponential.opt$par
 mean.stderr.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.exponential.opt$par, r=data))))
@@ -70,7 +94,8 @@ kurtosis.stderr.exponential <- NA
 # output
 res <- data.frame(aic.exponential, aicc.exponential, bic.exponential,
                                  chi.squared.statistic.exponential, chi.squared.pvalue.exponential, g.max.exponential, KS.exponential,
-                                 par.1.exponential, par.1.se.exponential, par.2.exponential, par.2.se.exponential,
+                                 par.1.exponential, par.1.exponential.CIlow, par.1.exponential.CIupp,
+                                 par.2.exponential, par.2.exponential.CIlow, par.2.exponential.CIupp,
                                  mean.exponential, mean.stderr.exponential, stdev.exponential, stdev.stderr.exponential,
                                  skewness.exponential, skewness.stderr.exponential, kurtosis.exponential, kurtosis.stderr.exponential)
 exponential.values <- list("opt" = dist.exponential.opt, "res" = res)
