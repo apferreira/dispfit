@@ -114,7 +114,7 @@ kurtosis.lognorm <- exp(4*dist.lognorm.opt$par[2]^2) + 2*exp(3*dist.lognorm.opt$
 kurtosis.stderr.lognorm <- msm::deltamethod(~ exp(4*x2^2) + 2*exp(3*x2^2) + 3*exp(2*x2^2) - 6, mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)) )
 # output
 res <- data.frame(aic.lognorm, aicc.lognorm, bic.lognorm,
-                             chi.squared.statistic.lognorm, chi.squared.pvalue.lognorm,g.max.lognorm, KS.lognorm,
+                             chi.squared.statistic.lognorm, chi.squared.pvalue.lognorm, g.max.lognorm, KS.lognorm,
                              par.1.lognorm, par.1.lognorm.CIlow, par.1.lognorm.CIupp,
                              par.2.lognorm, par.2.lognorm.CIlow, par.2.lognorm.CIupp,
                              mean.lognorm, mean.stderr.lognorm, stdev.lognorm, stdev.stderr.lognorm,

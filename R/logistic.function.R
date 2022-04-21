@@ -156,7 +156,7 @@ kurtosis.logistic <- "in progress"
 kurtosis.stderr.logistic <- "in progress"
 # output
 res <- data.frame(aic.logistic, aicc.logistic, bic.logistic,
-                              chi.squared.statistic.logistic, chi.squared.pvalue.logistic,g.max.logistic, KS.logistic,
+                              chi.squared.statistic.logistic, chi.squared.pvalue.logistic, g.max.logistic, KS.logistic,
                               par.1.logistic, par.1.se.logistic, par.2.logistic, par.2.se.logistic,
                               mean.logistic, mean.stderr.logistic, variance.logistic, variance.stderr.logistic,
                               skewness.logistic, skewness.stderr.logistic, kurtosis.logistic, kurtosis.stderr.logistic)

@@ -176,7 +176,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   }
   # output
   res <- data.frame(aic.2dt, aicc.2dt, bic.2dt,
-                             chi.squared.statistic.2dt, chi.squared.pvalue.2dt,g.max.2dt, KS.2dt,
+                             chi.squared.statistic.2dt, chi.squared.pvalue.2dt, g.max.2dt, KS.2dt,
                              par.1.2dt, par.1.2dt.CIlow, par.1.2dt.CIupp,
                              par.2.2dt, par.2.2dt.CIlow, par.2.2dt.CIupp,
                              mean.2dt, mean.stderr.2dt, stdev.2dt, stdev.stderr.2dt,

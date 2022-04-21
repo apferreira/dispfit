@@ -106,14 +106,14 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 6 ### INVERSE POWER-LAW - UNDEFINED
 
     ### 7 ### LOGISTIC ###
-    if ("all" %in% distribution | "logistic" %in% distribution) {
-      message(paste("Fitting Logistic distribution..."))
-      logistic.values <- logistic.function(kernel.fit$data, chi.res.hist, ks.res.hist)
-
-      kernel.fit$logistic <- logistic.values$opt
-      values <- rbind(values, setNames(logistic.values$res, names(values)))
-      row.names(values)[length(values$AIC)] <- "Logistic"
-    }
+    # if ("all" %in% distribution | "logistic" %in% distribution) {
+    #   message(paste("Fitting Logistic distribution..."))
+    #   logistic.values <- logistic.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+    #
+    #   kernel.fit$logistic <- logistic.values$opt
+    #   values <- rbind(values, setNames(logistic.values$res, names(values)))
+    #   row.names(values)[length(values$AIC)] <- "Logistic"
+    # }
     ### 8 ### LOGNORMAL ### DONE!
     if ("all" %in% distribution | "lognormal" %in% distribution) {
       message(paste("Fitting Log-Normal distribution..."))

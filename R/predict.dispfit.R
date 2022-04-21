@@ -144,26 +144,26 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       pred.disp$geometric$upr <- apply(df.seq.geometric, 1, FUN = max)
     }
   }
-  if ("Logistic" %in% best.fit) {
-    dist.logistic <- function (r, a, b) {
-      flogistic <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2/b) * gamma(1-(2/b)) )) * ((1 + ((r^b) / (a^b)))^(-1))
-      return(flogistic)
-    }
-    pred.disp$logistic <- data.frame(x)
-    pred.disp$logistic$pred <- dist.logistic(x, par.1.logistic, par.2.logistic)
-    if (isTRUE(envelopes)) {
-      seq.logistic.par.1 <- seq(data$values["Logistic","Parameter 1 lower CI"], data$values["Logistic","Parameter 1 upper CI"], length.out = n)
-      seq.logistic.par.2 <- seq(data$values["Logistic","Parameter 2 lower CI"], data$values["Logistic","Parameter 2 upper CI"], length.out = n)
-      df.seq.logistic <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.logistic <- dist.logistic(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
-        }
-      }
-      pred.disp$logistic$lwr <- apply(df.seq.logistic, 1, FUN = min)
-      pred.disp$logistic$upr <- apply(df.seq.logistic, 1, FUN = max)
-    }
-  }
+  # if ("Logistic" %in% best.fit) {
+  #   dist.logistic <- function (r, a, b) {
+  #     flogistic <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2/b) * gamma(1-(2/b)) )) * ((1 + ((r^b) / (a^b)))^(-1))
+  #     return(flogistic)
+  #   }
+  #   pred.disp$logistic <- data.frame(x)
+  #   pred.disp$logistic$pred <- dist.logistic(x, par.1.logistic, par.2.logistic)
+  #   if (isTRUE(envelopes)) {
+  #     seq.logistic.par.1 <- seq(data$values["Logistic","Parameter 1 lower CI"], data$values["Logistic","Parameter 1 upper CI"], length.out = n)
+  #     seq.logistic.par.2 <- seq(data$values["Logistic","Parameter 2 lower CI"], data$values["Logistic","Parameter 2 upper CI"], length.out = n)
+  #     df.seq.logistic <- data.frame(1:n)
+  #     for (i in 1:n) {
+  #       for (j in 1:n) {
+  #         df.seq.logistic <- dist.logistic(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+  #       }
+  #     }
+  #     pred.disp$logistic$lwr <- apply(df.seq.logistic, 1, FUN = min)
+  #     pred.disp$logistic$upr <- apply(df.seq.logistic, 1, FUN = max)
+  #   }
+  # }
   if ("Log-Normal" %in% best.fit) {
     dist.lognormal <- function (r, a, b) {
       flognorm <- 2*pi*r * (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))

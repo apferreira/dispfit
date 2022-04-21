@@ -122,7 +122,7 @@ kurtosis.stderr.weibull <- msm::deltamethod(~ (x1^4*gamma(1+4/x2) - 4 * ((x1^3*g
                                             cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data)) )
 # output
 res <- data.frame(aic.weibull, aicc.weibull, bic.weibull,
-                             chi.squared.statistic.weibull, chi.squared.pvalue.weibull,g.max.weibull, KS.weibull,
+                             chi.squared.statistic.weibull, chi.squared.pvalue.weibull, g.max.weibull, KS.weibull,
                              par.1.weibull, par.1.weibull.CIlow, par.1.weibull.CIupp, par.2.weibull, par.2.weibull.CIlow, par.2.weibull.CIupp,
                              mean.weibull, mean.stderr.weibull, stdev.weibull, stdev.stderr.weibull,
                              skewness.weibull, skewness.stderr.weibull, kurtosis.weibull, kurtosis.stderr.weibull)

@@ -116,7 +116,7 @@ kurtosis.wald <- (15*dist.wald.opt$par[1])/dist.wald.opt$par[2]
 kurtosis.stderr.wald <- msm::deltamethod(~ (15*x1)/x2, mean = dist.wald.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data)) )
 # output
 res <- data.frame(aic.wald, aicc.wald, bic.wald,
-                          chi.squared.statistic.wald, chi.squared.pvalue.wald,g.max.wald, KS.wald,
+                          chi.squared.statistic.wald, chi.squared.pvalue.wald, g.max.wald, KS.wald,
                           par.1.wald, par.1.wald.CIlow, par.1.wald.CIupp, par.2.wald, par.2.wald.CIlow, par.2.wald.CIupp,
                           mean.wald, mean.stderr.wald, stdev.wald, stdev.stderr.wald,
                           skewness.wald, skewness.stderr.wald, kurtosis.wald, kurtosis.stderr.wald)
