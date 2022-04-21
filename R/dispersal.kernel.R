@@ -502,7 +502,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   colnames(kernel.fit$values)[colnames(kernel.fit$values)=="delta.AICc"] <- "Delta AICc"
   colnames(kernel.fit$values)[colnames(kernel.fit$values)=="delta.BIC"] <- "Delta BIC"
   colnames(kernel.fit$values)[colnames(kernel.fit$values)=="wi"] <- "wi"
-  kernel.fit$values <- kernel.fit$values[,c(1, 20, 2, 21, 3, 22, 23, 4:19)]
+  kernel.fit$values <- kernel.fit$values[,c(1, 22, 2, 23, 3, 24, 25, 4:21)]
 
   if ("AIC" %in% order.by) {
     kernel.fit$values <- kernel.fit$values[order(kernel.fit$values$AIC),]
@@ -521,7 +521,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   #                                               function(y) if(is.numeric(y)) round(y, 3) else y))
 
   kernel.fit$distribution.selection <- kernel.fit$values[, 1:11]
-  kernel.fit$distribution.parameters <- kernel.fit$values[, 12:23]
+  kernel.fit$distribution.parameters <- kernel.fit$values[, 12:25]
   class(kernel.fit) <- "dispfit"
   kernel.fit
 }
