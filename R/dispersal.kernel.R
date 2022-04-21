@@ -37,7 +37,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   # require("msm")
   # require("numDeriv")
   kernel.fit <- list()
-  values <- setNames(data.frame(matrix(ncol = 19, nrow = 1)),  c("AIC", "AICc", "BIC", "Chi-squared value", "Chi-squared significance",
+  values <- setNames(data.frame(matrix(ncol = 21, nrow = 1)),  c("AIC", "AICc", "BIC", "Chi-squared value", "Chi-squared significance",
                                                                  "Kolmogorov-Smirnov value", "K-S significance",
                                                                  "Parameter 1", "Parameter 1 lower CI", "Parameter 1 upper CI",
                                                                  "Parameter 2", "Parameter 2 lower CI", "Parameter 2 upper CI",
@@ -164,15 +164,15 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # end
     }
     ### 14 ### CAUCHY
-    if ("all" %in% distribution | "cauchy" %in% distribution) {
-      message(paste("Fitting Cauchy distribution..."))
-      cauchy.values <- cauchy.function(kernel.fit$data, chi.res.hist, ks.res.hist)
-
-      kernel.fit$cauchy <- cauchy.values$opt
-      values <- rbind(values, setNames(cauchy.values$res, names(values)))
-      row.names(values)[length(values$AIC)] <- "Cauchy"
-      # end
-    }
+    # if ("all" %in% distribution | "cauchy" %in% distribution) {
+    #   message(paste("Fitting Cauchy distribution..."))
+    #   cauchy.values <- cauchy.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+    #
+    #   kernel.fit$cauchy <- cauchy.values$opt
+    #   values <- rbind(values, setNames(cauchy.values$res, names(values)))
+    #   row.names(values)[length(values$AIC)] <- "Cauchy"
+    #   # end
+    # }
   }  else if (isTRUE(extreme.values)) {
     ### EXTREME DISTRIBUTIONS FROM GARCIA AND BORDA DE AGUA 2017
     ### 15 ### GUMBEL
