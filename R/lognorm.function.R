@@ -52,6 +52,9 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist) {
   # parameter estimate
   par.1.lognorm <- dist.lognorm.opt$par[1]
   par.2.lognorm <- dist.lognorm.opt$par[2]
+  # parameter estimate standard error
+  par.1.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[1]
+  par.2.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[2]
   # parameter estimate confidence intervals
   log.dist.lognorm.ci <- function (a, b, r) {
     # a <- par[1]
@@ -128,9 +131,7 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist) {
 
   par.2.lognorm.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
   par.2.lognorm.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
-  # parameter estimate standard error
-  par.1.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[1]
-  par.2.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[2]
+
   # mean dispersal distance
   mean.lognorm <- dist.lognorm.opt$par[1] * exp((dist.lognorm.opt$par[2]^2)/2)
   mean.stderr.lognorm <- msm::deltamethod(~ x1 * exp((x2^2)/2), mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)) )
