@@ -190,7 +190,11 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fwald)
     }
     pred.disp$wald <- data.frame(x)
+<<<<<<< HEAD
     pred.disp$wald$pred <- dist.wald(x, data$values["Wald","Parameter 1"], data$values["Wald","Parameter 2"])
+=======
+    pred.disp$wald$pred <- dist.wald(x, ata$values["Wald","Parameter 1"], data$values["Wald","Parameter 2"])
+>>>>>>> b0c6c032523da27a615db754baf6e39c83c2b89a
     if (isTRUE(envelopes)) {
       seq.wald.par.1 <- seq(data$values["Wald","Parameter 1 lower CI"], data$values["Wald","Parameter 1 upper CI"], length.out = n)
       seq.wald.par.2 <- seq(data$values["Wald","Parameter 2 lower CI"], data$values["Wald","Parameter 2 upper CI"], length.out = n)
