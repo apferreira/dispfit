@@ -76,17 +76,37 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   par.1.se.2dt <- sqrt(diag(solve(numDeriv::hessian(log.dist.2dt, x=dist.2dt.opt$par, r=data))))[1]
   par.2.se.2dt <- sqrt(diag(solve(numDeriv::hessian(log.dist.2dt, x=dist.2dt.opt$par, r=data))))[2]
   # parameter estimate confidence intervals
+  log.dist.2dt.ci <- function (r, a, b) {
+    # a <- par[1] ## scale parameter
+    # b <- par[2] ## shape parameter
+    f2dt <- ((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
+    -sum(log(f2dt)) ##
+  }
   n.se <- 30
   len <- 1000
   par.1.ini <- par.1.2dt - n.se * par.1.se.2dt
+  if (par.1.ini <= 0) {
+    par.1.ini <- 0.01
+  }
   par.1.fin <- par.1.2dt + n.se * par.1.se.2dt
   par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
 
   par.1.prof = numeric(len)
   for (i in 1:len) {
-    par.1.prof[i] = optim(log.dist.2dt, par = par.2.2dt, a = par.1.est[i],
-                          r = data,
-                          method = "Nelder-Mead")$value
+    possibleError <- tryCatch(
+      par.1.prof[i] <- optim(log.dist.2dt.ci, par = par.2.2dt, a = par.1.est[i],
+                             r = data,
+                             method = "Nelder-Mead")$value,
+      error = function(e) e)
+    if(!inherits(possibleError, "error")){
+      par.1.prof[i] <- optim(log.dist.2dt.ci, par = par.2.2dt, a = par.1.est[i],
+                             r = data,
+                             method = "Nelder-Mead")$value
+    }
+  }
+
+  if (length(which(par.1.prof == 0) > 0)) {
+    par.1.prof <- par.1.prof[-which(par.1.prof == 0)]
   }
 
   prof.lower <- par.1.prof[1:which.min(par.1.prof)]
@@ -99,14 +119,28 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   par.1.2dt.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.2dt.opt$value + qchisq(0.95, 1)/2)$y
 
   par.2.ini <- par.2.2dt - n.se * par.2.se.2dt
+  if (par.2.ini <= 0) {
+    par.2.ini <- 0.01
+  }
   par.2.fin <- par.2.2dt + n.se * par.2.se.2dt
   par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
 
   par.2.prof = numeric(len)
   for (i in 1:len) {
-    par.2.prof[i] = optim(log.dist.2dt, par = par.1.2dt, b = par.2.est[i],
-                          r = data,
-                          method = "Nelder-Mead")$value
+    possibleError <- tryCatch(
+      par.2.prof[i] <- optim(log.dist.2dt.ci, par = par.1.2dt, b = par.2.est[i],
+                             r = data,
+                             method = "Nelder-Mead")$value,
+      error = function(e) e)
+    if(!inherits(possibleError, "error")){
+      par.2.prof[i] <- optim(log.dist.2dt.ci, par = par.1.2dt, b = par.2.est[i],
+                             r = data,
+                             method = "Nelder-Mead")$value
+    }
+  }
+
+  if (length(which(par.2.prof == 0) > 0)) {
+    par.2.prof <- par.2.prof[-which(par.2.prof == 0)]
   }
 
   prof.lower = par.2.prof[1:which.min(par.2.prof)]
@@ -176,10 +210,10 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   }
   # output
   res <- data.frame(aic.2dt, aicc.2dt, bic.2dt,
-                             chi.squared.statistic.2dt, chi.squared.pvalue.2dt, g.max.2dt, KS.2dt,
-                             par.1.2dt, par.1.2dt.CIlow, par.1.2dt.CIupp,
-                             par.2.2dt, par.2.2dt.CIlow, par.2.2dt.CIupp,
-                             mean.2dt, mean.stderr.2dt, stdev.2dt, stdev.stderr.2dt,
+                    chi.squared.statistic.2dt, chi.squared.pvalue.2dt, g.max.2dt, KS.2dt,
+                    par.1.2dt, par.1.2dt.CIlow, par.1.2dt.CIupp,
+                    par.2.2dt, par.2.2dt.CIlow, par.2.2dt.CIupp,
+                    mean.2dt, mean.stderr.2dt, stdev.2dt, stdev.stderr.2dt,
                     skewness.2dt, skewness.stderr.2dt, kurtosis.2dt, kurtosis.stderr.2dt)
-twodt.values <- list("opt" = dist.2dt.opt, "res" = res)
+  twodt.values <- list("opt" = dist.2dt.opt, "res" = res)
 }
