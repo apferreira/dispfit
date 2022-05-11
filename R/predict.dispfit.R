@@ -110,7 +110,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(f2dt)
     }
     pred.disp$twodt <- data.frame(x)
-    pred.disp$twodt$pred <- dist.twodt(x, data$values["2Dt","Parameter 1"], data$values["2Dt","Parameter 2"])
+    pred.disp$twodt$pred <- dist.2dt(x, data$values["2Dt","Parameter 1"], data$values["2Dt","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.2dt.par.1 <- seq(data$values["2Dt","Parameter 1 lower CI"], data$values["2Dt","Parameter 1 upper CI"], length.out = n)
       seq.2dt.par.2 <- seq(data$values["2Dt","Parameter 2 lower CI"], data$values["2Dt","Parameter 2 upper CI"], length.out = n)
