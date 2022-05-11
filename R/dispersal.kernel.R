@@ -154,15 +154,15 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
       # end
     }
     ### 13 ### LOG-SECH / HYPERBOLIC SECANT ### DONE!
-    if ("all" %in% distribution | "log-sech" %in% distribution) {
-      message(paste("Fitting Log-sech distribution..."))
-      logsech.values <- logsech.function(kernel.fit$data, chi.res.hist, ks.res.hist)
-
-      kernel.fit$logsech <- logsech.values$opt
-      values <- rbind(values, setNames(logsech.values$res, names(values)))
-      row.names(values)[length(values$AIC)] <- "Log-sech"
-      # end
-    }
+    # if ("all" %in% distribution | "log-sech" %in% distribution) {
+    #   message(paste("Fitting Log-sech distribution..."))
+    #   logsech.values <- logsech.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+    #
+    #   kernel.fit$logsech <- logsech.values$opt
+    #   values <- rbind(values, setNames(logsech.values$res, names(values)))
+    #   row.names(values)[length(values$AIC)] <- "Log-sech"
+    #   # end
+    # }
     ### 14 ### CAUCHY
     # if ("all" %in% distribution | "cauchy" %in% distribution) {
     #   message(paste("Fitting Cauchy distribution..."))
