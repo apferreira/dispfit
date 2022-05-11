@@ -57,7 +57,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fg)
     }
     pred.disp$rayleigh <- data.frame(x)
-    pred.disp$rayleigh$pred <- dist.rayleigh(x, par.1.rayleigh)
+    pred.disp$rayleigh$pred <- dist.rayleigh(x, data$values["Rayleigh","Parameter 1"])
     if (isTRUE(envelopes)) {
     seq.rayleigh <- seq(data$values["Rayleigh","Parameter 1 lower CI"], data$values["Rayleigh","Parameter 1 upper CI"], length.out = n)
     df.seq.rayleigh <- data.frame(1:n)
@@ -74,7 +74,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fexponential)
     }
     pred.disp$exponential <- data.frame(x)
-    pred.disp$exponential$pred <- dist.exponential(x, par.1.exponential)
+    pred.disp$exponential$pred <- dist.exponential(x, data$values["Exponential","Parameter 1"])
     if (isTRUE(envelopes)) {
     seq.exponential <- seq(data$values["Exponential","Parameter 1 lower CI"], data$values["Exponential","Parameter 1 upper CI"], length.out = n)
     df.seq.exponential <- data.frame(1:n)
@@ -91,7 +91,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fgeneralnormal)
     }
     pred.disp$generalnormal <- data.frame(x)
-    pred.disp$generalnormal$pred <- dist.generalnormal(x, par.1.generalnormal, par.2.generalnormal)
+    pred.disp$generalnormal$pred <- dist.generalnormal(x, data$values["Generalized Normal","Parameter 1"], data$values["Generalized Normal","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.generalnormal.par.1 <- seq(data$values["Generalized Normal","Parameter 1 lower CI"], data$values["Generalized Normal","Parameter 1 upper CI"], length.out = n)
       seq.generalnormal.par.2 <- seq(data$values["Generalized Normal","Parameter 2 lower CI"], data$values["Generalized Normal","Parameter 2 upper CI"], length.out = n)
@@ -110,7 +110,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(f2dt)
     }
     pred.disp$twodt <- data.frame(x)
-    pred.disp$twodt$pred <- dist.twodt(x, par.1.twodt, par.2.twodt)
+    pred.disp$twodt$pred <- dist.twodt(x, data$values["2Dt","Parameter 1"], data$values["2Dt","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.2dt.par.1 <- seq(data$values["2Dt","Parameter 1 lower CI"], data$values["2Dt","Parameter 1 upper CI"], length.out = n)
       seq.2dt.par.2 <- seq(data$values["2Dt","Parameter 2 lower CI"], data$values["2Dt","Parameter 2 upper CI"], length.out = n)
@@ -130,7 +130,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fgeometric)
     }
     pred.disp$geometric <- data.frame(x)
-    pred.disp$geometric$pred <- dist.geometric(x, par.1.geometric, par.2.geometric)
+    pred.disp$geometric$pred <- dist.geometric(x, data$values["Geometric","Parameter 1"], data$values["Geometric","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.geometric.par.1 <- seq(data$values["Geometric","Parameter 1 lower CI"], data$values["Geometric","Parameter 1 upper CI"], length.out = n)
       seq.geometric.par.2 <- seq(data$values["Geometric","Parameter 2 lower CI"], data$values["Geometric","Parameter 2 upper CI"], length.out = n)
@@ -170,7 +170,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(flognorm)
     }
     pred.disp$lognormal <- data.frame(x)
-    pred.disp$lognormal$pred <- dist.lognormal(x, par.1.lognormal, par.2.lognormal)
+    pred.disp$lognormal$pred <- dist.lognormal(x, data$values["Log-Normal","Parameter 1"], data$values["Log-Normal","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.lognormal.par.1 <- seq(data$values["Log-Normal","Parameter 1 lower CI"], data$values["Log-Normal","Parameter 1 upper CI"], length.out = n)
       seq.lognormal.par.2 <- seq(data$values["Log-Normal","Parameter 2 lower CI"], data$values["Log-Normal","Parameter 2 upper CI"], length.out = n)
@@ -190,7 +190,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fwald)
     }
     pred.disp$wald <- data.frame(x)
-    pred.disp$wald$pred <- dist.wald(x, par.1.wald, par.2.wald)
+    pred.disp$wald$pred <- dist.wald(x, data$values["Wald","Parameter 1"], data$values["Wald","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.wald.par.1 <- seq(data$values["Wald","Parameter 1 lower CI"], data$values["Wald","Parameter 1 upper CI"], length.out = n)
       seq.wald.par.2 <- seq(data$values["Wald","Parameter 2 lower CI"], data$values["Wald","Parameter 2 upper CI"], length.out = n)
@@ -210,7 +210,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fw)
     }
     pred.disp$weibull <- data.frame(x)
-    pred.disp$weibull$pred <- dist.weibull(x, par.1.weibull, par.2.weibull)
+    pred.disp$weibull$pred <- dist.weibull(x, data$values["Weibull","Parameter 1"], data$values["Weibull","Parameter 2"])
     if (isTRUE(envelopes)) {
       seq.weibull.par.1 <- seq(data$values["Weibull","Parameter 1 lower CI"], data$values["Weibull","Parameter 1 upper CI"], length.out = n)
       seq.weibull.par.2 <- seq(data$values["Weibull","Parameter 2 lower CI"], data$values["Weibull","Parameter 2 upper CI"], length.out = n)
@@ -230,7 +230,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       return(fgamma)
     }
     pred.disp$gamma <- data.frame(x)
-    pred.disp$gamma$pred <- dist.gamma(x, par.1.gamma, par.2.gamma)
+    pred.disp$gamma$pred <- dist.gamma(x, data$values["Gamma","Parameter 1"], data$values["Gamma","Parameter 2"])
 
     if (isTRUE(envelopes)) {
       seq.gamma.par.1 <- seq(data$values["Gamma","Parameter 1 lower CI"], data$values["Gamma","Parameter 1 upper CI"], length.out = n)
@@ -245,27 +245,27 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       pred.disp$gamma$upr <- apply(df.seq.gamma, 1, FUN = max)
     }
   }
-  if ("Log-sech" %in% best.fit) {
-    dist.logsech <- function (r, a, b) {
-      flogsech <- 2*pi*r * (1 / ((pi^2) * b * (r^2))) / (((r / a)^(1 / b)) + ((r / a) ^ -(1 / b)))
-      return(flogsech)
-    }
-    pred.disp$logsech <- data.frame(x)
-    pred.disp$logsech$pred <- dist.logsech(x, par.1.logsech, par.2.logsech)
-
-    if (isTRUE(envelopes)) {
-      seq.logsech.par.1 <- seq(data$values["Logsech","Parameter 1 lower CI"], data$values["Logsech","Parameter 1 upper CI"], length.out = n)
-      seq.logsech.par.2 <- seq(data$values["Logsech","Parameter 2 lower CI"], data$values["Logsech","Parameter 2 upper CI"], length.out = n)
-      df.seq.logsech <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.logsech <- dist.logsech(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
-        }
-      }
-      pred.disp$logsech$lwr <- apply(df.seq.logsech, 1, FUN = min)
-      pred.disp$logsech$upr <- apply(df.seq.logsech, 1, FUN = max)
-    }
-  }
+  # if ("Log-sech" %in% best.fit) {
+  #   dist.logsech <- function (r, a, b) {
+  #     flogsech <- 2*pi*r * (1 / ((pi^2) * b * (r^2))) / (((r / a)^(1 / b)) + ((r / a) ^ -(1 / b)))
+  #     return(flogsech)
+  #   }
+  #   pred.disp$logsech <- data.frame(x)
+  #   pred.disp$logsech$pred <- dist.logsech(x, par.1.logsech, par.2.logsech)
+  #
+  #   if (isTRUE(envelopes)) {
+  #     seq.logsech.par.1 <- seq(data$values["Logsech","Parameter 1 lower CI"], data$values["Logsech","Parameter 1 upper CI"], length.out = n)
+  #     seq.logsech.par.2 <- seq(data$values["Logsech","Parameter 2 lower CI"], data$values["Logsech","Parameter 2 upper CI"], length.out = n)
+  #     df.seq.logsech <- data.frame(1:n)
+  #     for (i in 1:n) {
+  #       for (j in 1:n) {
+  #         df.seq.logsech <- dist.logsech(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+  #       }
+  #     }
+  #     pred.disp$logsech$lwr <- apply(df.seq.logsech, 1, FUN = min)
+  #     pred.disp$logsech$upr <- apply(df.seq.logsech, 1, FUN = max)
+  #   }
+  # }
 
   ## Calculate Confidence Envelopes
   # if (isTRUE(envelopes)) {
