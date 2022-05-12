@@ -98,7 +98,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.generalnormal <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.generalnormal <- dist.generalnormal(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.generalnormal <- dist.generalnormal(x, seq.generalnormal.par.1[i], seq.generalnormal.par.2[j])
         }}
       pred.disp$generalnormal$lwr <- apply(df.seq.generalnormal, 1, FUN = min)
       pred.disp$generalnormal$upr <- apply(df.seq.generalnormal, 1, FUN = max)
@@ -117,7 +117,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.twodt <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.2dt <- dist.2dt(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.2dt <- dist.2dt(x, seq.2dt.par.1[i], seq.2dt.par.2[j])
         }
         }
       pred.disp$twodt$lwr <- apply(df.seq.2dt, 1, FUN = min)
@@ -137,7 +137,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.geometric <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.geometric <- dist.geometric(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.geometric <- dist.geometric(x, seq.geometric.par.1[i], seq.geometric.par.2[j])
         }
         }
       pred.disp$geometric$lwr <- apply(df.seq.geometric, 1, FUN = min)
@@ -177,7 +177,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.lognormal <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.lognormal <- dist.lognormal(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.lognormal <- dist.lognormal(x, seq.lognormal.par.1[i], seq.lognormal.par.2[j])
         }
       }
       pred.disp$lognormal$lwr <- apply(df.seq.lognormal, 1, FUN = min)
@@ -197,7 +197,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.wald <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.wald <- dist.wald(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.wald <- dist.wald(x, seq.wald.par.1[i], seq.wald.par.2[j])
         }
       }
       pred.disp$wald$lwr <- apply(df.seq.wald, 1, FUN = min)
@@ -217,7 +217,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.weibull <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.weibull <- dist.weibull(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.weibull <- dist.weibull(x, seq.weibull.par.1[i], seq.weibull.par.2[j])
         }
       }
       pred.disp$weibull$lwr <- apply(df.seq.weibull, 1, FUN = min)
@@ -238,7 +238,7 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       df.seq.gamma <- data.frame(1:n)
       for (i in 1:n) {
         for (j in 1:n) {
-          df.seq.gamma <- dist.gamma(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
+          df.seq.gamma <- dist.gamma(x, seq.gamma.par.1[i], seq.gamma.par.2[j])
         }
       }
       pred.disp$gamma$lwr <- apply(df.seq.gamma, 1, FUN = min)
