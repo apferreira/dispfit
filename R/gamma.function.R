@@ -1,4 +1,4 @@
-gamma.function <- function (data, chi.res.hist, ks.res.hist) {
+gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.gamma <- function (par, r) {
     a <- par[1] ## scale
     b <- par[2] ## shape
@@ -95,8 +95,8 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.gamma.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.gamma.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.gamma.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.gamma.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.gamma.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.gamma.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.ini <- par.2.gamma - n.se * par.2.se.gamma
   if (par.2.ini <= 0) {
@@ -129,8 +129,8 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
   prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
 
-  par.2.gamma.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
-  par.2.gamma.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.gamma.opt$value + qchisq(0.95, 1)/2)$y
+  par.2.gamma.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.gamma.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.2.gamma.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.gamma.opt$value + qchisq(confidence.level, 1)/2)$y
   # mean dispersal distance
   mean.gamma <- dist.gamma.opt$par[1] * dist.gamma.opt$par[2]
   mean.stderr.gamma <- msm::deltamethod(~ x1 * x2,

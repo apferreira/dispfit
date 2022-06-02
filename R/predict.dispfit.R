@@ -20,7 +20,8 @@
 #' predict(test)
 
 predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
-                            envelopes = TRUE, level = 0.95,
+                            envelopes = TRUE,
+                            # level = 0.95,
                             # se.fit = FALSE,
                             #  interval = c("none", "confidence", "prediction"),
                             #  type = c("response", "terms"),
@@ -42,12 +43,9 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     best.fit <- row.names(data$values[c(1:fit.criteria),])
   }
 
-  # if (level > 1 || level < 0) {stop('value for level must be between 0 and 1')}
-  # upr <- 1-(1-level)/2
-  # lwr <- (1-level)/2
-
-  x <- 1:floor(max(data$data))
-  n <- length(x)
+  n <- 100
+  x <- seq(1, floor(max(data$data)), length.out = n)
+  # n <- length(x)
 
   pred.disp <- list()
 
@@ -56,16 +54,15 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       fg <- 2*pi*r*(1/(pi*a^2)) * exp(-r^2/a^2)
       return(fg)
     }
-    pred.disp$rayleigh <- data.frame(x)
-    pred.disp$rayleigh$pred <- dist.rayleigh(x, data$values["Rayleigh","Parameter 1"])
+    pred.disp$rayleigh <- data.frame(distance = x, rayleigh = dist.rayleigh(x, data$values["Rayleigh","Parameter 1"]))
     if (isTRUE(envelopes)) {
-    seq.rayleigh <- seq(data$values["Rayleigh","Parameter 1 lower CI"], data$values["Rayleigh","Parameter 1 upper CI"], length.out = n)
-    df.seq.rayleigh <- data.frame(1:n)
-    for (i in 1:n) {
-      df.seq.rayleigh[i] <- dist.rayleigh(x, seq.rayleigh[i])
-    }
-    pred.disp$rayleigh$lwr <- apply(df.seq.rayleigh, 1, FUN = min)
-    pred.disp$rayleigh$upr <- apply(df.seq.rayleigh, 1, FUN = max)
+      seq.rayleigh <- seq(data$values["Rayleigh","Parameter 1 lower CI"], data$values["Rayleigh","Parameter 1 upper CI"], length.out = n)
+      df.seq.rayleigh <- data.frame(1:n)
+      for (i in 1:n) {
+        df.seq.rayleigh[i] <- dist.rayleigh(x, seq.rayleigh[i])
+      }
+      pred.disp$rayleigh$lwr <- apply(df.seq.rayleigh, 1, FUN = min)
+      pred.disp$rayleigh$upr <- apply(df.seq.rayleigh, 1, FUN = max)
     }
   }
   if ("Exponential" %in% best.fit) {
@@ -73,33 +70,38 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       fexponential <-  2*pi*r*(1 / (2 * pi * a ^ 2 )) * exp(-r/a) # corrected function, adapted from Nathan 2012
       return(fexponential)
     }
-    pred.disp$exponential <- data.frame(x)
-    pred.disp$exponential$pred <- dist.exponential(x, data$values["Exponential","Parameter 1"])
+    pred.disp$exponential <- data.frame(distance = x, exponential = dist.exponential(x, data$values["Exponential","Parameter 1"]))
     if (isTRUE(envelopes)) {
-    seq.exponential <- seq(data$values["Exponential","Parameter 1 lower CI"], data$values["Exponential","Parameter 1 upper CI"], length.out = n)
-    df.seq.exponential <- data.frame(1:n)
-    for (i in 1:n) {
-      df.seq.exponential[i] <- dist.exponential(x, seq.exponential[i])
-    }
+      seq.exponential <- seq(data$values["Exponential","Parameter 1 lower CI"], data$values["Exponential","Parameter 1 upper CI"], length.out = n)
+      df.seq.exponential <- data.frame(1:n)
+      for (i in 1:n) {
+        df.seq.exponential[i] <- dist.exponential(x, seq.exponential[i])
+      }
       pred.disp$exponential$lwr <- apply(df.seq.exponential, 1, FUN = min)
       pred.disp$exponential$upr <- apply(df.seq.exponential, 1, FUN = max)
-      }
     }
+  }
   if ("Generalized Normal" %in% best.fit) {
     dist.generalnormal <- function (r, a, b) {
       fgeneralnormal <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r / a) ^ b)
       return(fgeneralnormal)
     }
-    pred.disp$generalnormal <- data.frame(x)
-    pred.disp$generalnormal$pred <- dist.generalnormal(x, data$values["Generalized Normal","Parameter 1"], data$values["Generalized Normal","Parameter 2"])
+    pred.disp$generalnormal <- data.frame(distance = x, generalnormal = dist.generalnormal(x, data$values["Generalized Normal","Parameter 1"], data$values["Generalized Normal","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.generalnormal.par.1 <- seq(data$values["Generalized Normal","Parameter 1 lower CI"], data$values["Generalized Normal","Parameter 1 upper CI"], length.out = n)
       seq.generalnormal.par.2 <- seq(data$values["Generalized Normal","Parameter 2 lower CI"], data$values["Generalized Normal","Parameter 2 upper CI"], length.out = n)
       df.seq.generalnormal <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.generalnormal <- dist.generalnormal(x, seq.generalnormal.par.1[i], seq.generalnormal.par.2[j])
-        }}
+
+      list.seq.generalnormal <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.generalnormal[[c]] <- dist.generalnormal(x, seq.generalnormal.par.1[i], seq.generalnormal.par.2[j])
+          c = c + 1
+        }
+      }
+      df.seq.generalnormal <- data.frame()
+      df.seq.generalnormal <- do.call(cbind, list.seq.generalnormal)
       pred.disp$generalnormal$lwr <- apply(df.seq.generalnormal, 1, FUN = min)
       pred.disp$generalnormal$upr <- apply(df.seq.generalnormal, 1, FUN = max)
     }
@@ -109,17 +111,22 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       f2dt <- 2*pi*r*((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
       return(f2dt)
     }
-    pred.disp$twodt <- data.frame(x)
-    pred.disp$twodt$pred <- dist.2dt(x, data$values["2Dt","Parameter 1"], data$values["2Dt","Parameter 2"])
+    pred.disp$twodt <- data.frame(distance = x, twodt = dist.2dt(x, data$values["2Dt","Parameter 1"], data$values["2Dt","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.2dt.par.1 <- seq(data$values["2Dt","Parameter 1 lower CI"], data$values["2Dt","Parameter 1 upper CI"], length.out = n)
       seq.2dt.par.2 <- seq(data$values["2Dt","Parameter 2 lower CI"], data$values["2Dt","Parameter 2 upper CI"], length.out = n)
-      df.seq.twodt <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.2dt <- dist.2dt(x, seq.2dt.par.1[i], seq.2dt.par.2[j])
+
+      list.seq.2dt <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.2dt[[c]] <- dist.2dt(x, seq.2dt.par.1[i], seq.2dt.par.2[j])
+          c = c + 1
         }
-        }
+      }
+      df.seq.2dt <- data.frame()
+      df.seq.2dt <- do.call(cbind, list.seq.2dt)
+
       pred.disp$twodt$lwr <- apply(df.seq.2dt, 1, FUN = min)
       pred.disp$twodt$upr <- apply(df.seq.2dt, 1, FUN = max)
     }
@@ -129,57 +136,46 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       fgeometric <- 2*pi*r*(((b - 2) * (b - 1)) / (2 * pi * (a^2))) * ((1 + (r / a)) ^ -b)
       return(fgeometric)
     }
-    pred.disp$geometric <- data.frame(x)
-    pred.disp$geometric$pred <- dist.geometric(x, data$values["Geometric","Parameter 1"], data$values["Geometric","Parameter 2"])
+    pred.disp$geometric <- data.frame(distance = x, geometric = dist.geometric(x, data$values["Geometric","Parameter 1"], data$values["Geometric","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.geometric.par.1 <- seq(data$values["Geometric","Parameter 1 lower CI"], data$values["Geometric","Parameter 1 upper CI"], length.out = n)
       seq.geometric.par.2 <- seq(data$values["Geometric","Parameter 2 lower CI"], data$values["Geometric","Parameter 2 upper CI"], length.out = n)
-      df.seq.geometric <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.geometric <- dist.geometric(x, seq.geometric.par.1[i], seq.geometric.par.2[j])
+
+      list.seq.geometric <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.geometric[[c]] <- dist.geometric(x, seq.geometric.par.1[i], seq.geometric.par.2[j])
+          c = c + 1
         }
-        }
+      }
+      df.seq.geometric <- data.frame()
+      df.seq.geometric <- do.call(cbind, list.seq.geometric)
+
       pred.disp$geometric$lwr <- apply(df.seq.geometric, 1, FUN = min)
       pred.disp$geometric$upr <- apply(df.seq.geometric, 1, FUN = max)
     }
   }
-  # if ("Logistic" %in% best.fit) {
-  #   dist.logistic <- function (r, a, b) {
-  #     flogistic <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2/b) * gamma(1-(2/b)) )) * ((1 + ((r^b) / (a^b)))^(-1))
-  #     return(flogistic)
-  #   }
-  #   pred.disp$logistic <- data.frame(x)
-  #   pred.disp$logistic$pred <- dist.logistic(x, par.1.logistic, par.2.logistic)
-  #   if (isTRUE(envelopes)) {
-  #     seq.logistic.par.1 <- seq(data$values["Logistic","Parameter 1 lower CI"], data$values["Logistic","Parameter 1 upper CI"], length.out = n)
-  #     seq.logistic.par.2 <- seq(data$values["Logistic","Parameter 2 lower CI"], data$values["Logistic","Parameter 2 upper CI"], length.out = n)
-  #     df.seq.logistic <- data.frame(1:n)
-  #     for (i in 1:n) {
-  #       for (j in 1:n) {
-  #         df.seq.logistic <- dist.logistic(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
-  #       }
-  #     }
-  #     pred.disp$logistic$lwr <- apply(df.seq.logistic, 1, FUN = min)
-  #     pred.disp$logistic$upr <- apply(df.seq.logistic, 1, FUN = max)
-  #   }
-  # }
   if ("Log-Normal" %in% best.fit) {
     dist.lognormal <- function (r, a, b) {
       flognorm <- 2*pi*r * (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
       return(flognorm)
     }
-    pred.disp$lognormal <- data.frame(x)
-    pred.disp$lognormal$pred <- dist.lognormal(x, data$values["Log-Normal","Parameter 1"], data$values["Log-Normal","Parameter 2"])
+    pred.disp$lognormal <- data.frame(distance = x, lognormal = dist.lognormal(x, data$values["Log-Normal","Parameter 1"], data$values["Log-Normal","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.lognormal.par.1 <- seq(data$values["Log-Normal","Parameter 1 lower CI"], data$values["Log-Normal","Parameter 1 upper CI"], length.out = n)
       seq.lognormal.par.2 <- seq(data$values["Log-Normal","Parameter 2 lower CI"], data$values["Log-Normal","Parameter 2 upper CI"], length.out = n)
-      df.seq.lognormal <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.lognormal <- dist.lognormal(x, seq.lognormal.par.1[i], seq.lognormal.par.2[j])
+      list.seq.lognorma <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.lognorma[[c]] <- dist.lognormal(x, seq.lognormal.par.1[i], seq.lognormal.par.2[j])
+          c = c + 1
         }
       }
+      df.seq.lognormal <- data.frame()
+      df.seq.lognormal <- do.call(cbind, list.seq.lognorma)
+
       pred.disp$lognormal$lwr <- apply(df.seq.lognormal, 1, FUN = min)
       pred.disp$lognormal$upr <- apply(df.seq.lognormal, 1, FUN = max)
     }
@@ -189,17 +185,21 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       fwald <- 2*pi*r * (sqrt(b)/sqrt(8 * (pi^3) * (r^5))) * exp(-(b * ((r - a)^2))/(2 * (a^2) * r))
       return(fwald)
     }
-    pred.disp$wald <- data.frame(x)
-    pred.disp$wald$pred <- dist.wald(x, data$values["Wald","Parameter 1"], data$values["Wald","Parameter 2"])
+    pred.disp$wald <- data.frame(distance = x, wald = dist.wald(x, data$values["Wald","Parameter 1"], data$values["Wald","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.wald.par.1 <- seq(data$values["Wald","Parameter 1 lower CI"], data$values["Wald","Parameter 1 upper CI"], length.out = n)
       seq.wald.par.2 <- seq(data$values["Wald","Parameter 2 lower CI"], data$values["Wald","Parameter 2 upper CI"], length.out = n)
-      df.seq.wald <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.wald <- dist.wald(x, seq.wald.par.1[i], seq.wald.par.2[j])
+      list.seq.wald <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.wald[[c]] <- dist.wald(x, seq.wald.par.1[i], seq.wald.par.2[j])
+          c = c + 1
         }
       }
+      df.seq.wald <- data.frame()
+      df.seq.wald <- do.call(cbind, list.seq.wald)
+
       pred.disp$wald$lwr <- apply(df.seq.wald, 1, FUN = min)
       pred.disp$wald$upr <- apply(df.seq.wald, 1, FUN = max)
     }
@@ -209,17 +209,21 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       fw <- 2*pi*r * (b/(2*pi*a^b)) * (r^(b-2)) * exp(-(r^b/a^b)) ## function from Austerlitz 2004
       return(fw)
     }
-    pred.disp$weibull <- data.frame(x)
-    pred.disp$weibull$pred <- dist.weibull(x, data$values["Weibull","Parameter 1"], data$values["Weibull","Parameter 2"])
+    pred.disp$weibull <- data.frame(distance = x, weibull = dist.weibull(x, data$values["Weibull","Parameter 1"], data$values["Weibull","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.weibull.par.1 <- seq(data$values["Weibull","Parameter 1 lower CI"], data$values["Weibull","Parameter 1 upper CI"], length.out = n)
       seq.weibull.par.2 <- seq(data$values["Weibull","Parameter 2 lower CI"], data$values["Weibull","Parameter 2 upper CI"], length.out = n)
-      df.seq.weibull <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.weibull <- dist.weibull(x, seq.weibull.par.1[i], seq.weibull.par.2[j])
+      list.seq.weibull <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.weibull[[c]] <- dist.weibull(x, seq.weibull.par.1[i], seq.weibull.par.2[j])
+          c = c + 1
         }
       }
+      df.seq.weibull <- data.frame()
+      df.seq.weibull <- do.call(cbind, list.seq.weibull)
+
       pred.disp$weibull$lwr <- apply(df.seq.weibull, 1, FUN = min)
       pred.disp$weibull$upr <- apply(df.seq.weibull, 1, FUN = max)
     }
@@ -229,253 +233,24 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       fgamma <- 2*pi*r * (1 / (2 * pi * (a^2) * gamma(b))) * ((r/a)^(b-2)) * exp(-r/a)
       return(fgamma)
     }
-    pred.disp$gamma <- data.frame(x)
-    pred.disp$gamma$pred <- dist.gamma(x, data$values["Gamma","Parameter 1"], data$values["Gamma","Parameter 2"])
-
+    pred.disp$gamma <- data.frame(distance = x, gamma = dist.gamma(x, data$values["Gamma","Parameter 1"], data$values["Gamma","Parameter 2"]))
     if (isTRUE(envelopes)) {
       seq.gamma.par.1 <- seq(data$values["Gamma","Parameter 1 lower CI"], data$values["Gamma","Parameter 1 upper CI"], length.out = n)
       seq.gamma.par.2 <- seq(data$values["Gamma","Parameter 2 lower CI"], data$values["Gamma","Parameter 2 upper CI"], length.out = n)
-      df.seq.gamma <- data.frame(1:n)
-      for (i in 1:n) {
-        for (j in 1:n) {
-          df.seq.gamma <- dist.gamma(x, seq.gamma.par.1[i], seq.gamma.par.2[j])
+      list.seq.gamma <- list()
+      c = 1
+      for (i in seq_along(1:n)) {
+        for (j in seq_along(1:n)) {
+          list.seq.gamma[[c]] <- dist.gamma(x, seq.gamma.par.1[i], seq.gamma.par.2[j])
+          c = c + 1
         }
       }
+      df.seq.gamma <- data.frame()
+      df.seq.gamma <- do.call(cbind, list.seq.gamma)
+
       pred.disp$gamma$lwr <- apply(df.seq.gamma, 1, FUN = min)
       pred.disp$gamma$upr <- apply(df.seq.gamma, 1, FUN = max)
     }
   }
-  # if ("Log-sech" %in% best.fit) {
-  #   dist.logsech <- function (r, a, b) {
-  #     flogsech <- 2*pi*r * (1 / ((pi^2) * b * (r^2))) / (((r / a)^(1 / b)) + ((r / a) ^ -(1 / b)))
-  #     return(flogsech)
-  #   }
-  #   pred.disp$logsech <- data.frame(x)
-  #   pred.disp$logsech$pred <- dist.logsech(x, par.1.logsech, par.2.logsech)
-  #
-  #   if (isTRUE(envelopes)) {
-  #     seq.logsech.par.1 <- seq(data$values["Logsech","Parameter 1 lower CI"], data$values["Logsech","Parameter 1 upper CI"], length.out = n)
-  #     seq.logsech.par.2 <- seq(data$values["Logsech","Parameter 2 lower CI"], data$values["Logsech","Parameter 2 upper CI"], length.out = n)
-  #     df.seq.logsech <- data.frame(1:n)
-  #     for (i in 1:n) {
-  #       for (j in 1:n) {
-  #         df.seq.logsech <- dist.logsech(data, seq.par.1.gennormal[i], seq.par.2.gennormal[j])
-  #       }
-  #     }
-  #     pred.disp$logsech$lwr <- apply(df.seq.logsech, 1, FUN = min)
-  #     pred.disp$logsech$upr <- apply(df.seq.logsech, 1, FUN = max)
-  #   }
-  # }
-
-  ## Calculate Confidence Envelopes
-  # if (isTRUE(envelopes)) {
-  # n <- 4000
-  # if ("Rayleigh" %in% best.fit) {
-  #   a <- msm::rtnorm(n, data$values["Rayleigh", "Parameter 1"], data$values["Rayleigh", "Parameter 1 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     y <- dist.rayleigh(x, as)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Rayleigh Distribution confidence envelopes')
-  #   all.sim$rayleigh$upr <- dist[upr*m,]
-  #   all.sim$rayleigh$lwr <- dist[lwr*m,]
-  # }
-  # if ("Exponential" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Exponential", "Parameter 1"],data$values["Exponential", "Parameter 1 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     y <- dist.exponential(x, as)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Exponential Distribution confidence envelopes')
-  #   all.sim$exponential$upr <- dist[upr*m,]
-  #   all.sim$exponential$lwr <- dist[lwr*m,]
-  # }
-  # if ("Generalized Normal" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 1"],data$values["Generalized Normal", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 2"],data$values["Generalized Normal", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.generalnormal(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Generalized Normal Distribution confidence envelopes')
-  #   all.sim$generalnormal$upr <- dist[upr*m,]
-  #   all.sim$generalnormal$lwr <- dist[lwr*m,]
-  # }
-  # if ("2Dt" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["2Dt", "Parameter 1"],data$values["2Dt", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["2Dt", "Parameter 2"],data$values["2Dt", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.2dt(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the 2Dt Distribution confidence envelopes')
-  #   all.sim$twodt$upr <- dist[upr*m,]
-  #   all.sim$twodt$lwr <- dist[lwr*m,]
-  # }
-  # if ("Geometric" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Geometric", "Parameter 1"],data$values["Geometric", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Geometric", "Parameter 2"],data$values["Geometric", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.geometric(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist, 2, sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m)} # doesn't seem replicable, have to find another solution
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Geometric Distribution confidence envelopes')
-  #   all.sim$geometric$upr <- dist[upr*m,]
-  #   all.sim$geometric$lwr <- dist[lwr*m,]
-  # }
-  # if ("Logistic" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Logistic", "Parameter 1"],data$values["Logistic", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Logistic", "Parameter 2"],data$values["Logistic", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.logistic(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist, 2, sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   all.sim$logistic$upr <- dist[upr*m,]
-  #   all.sim$logistic$lwr <- dist[lwr*m,]
-  # }
-  # if ("Log-Normal" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 1"],data$values["Log-Normal", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 2"],data$values["Log-Normal", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.lognormal(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Log-Normal Distribution confidence envelopes')
-  #   all.sim$lognormal$upr <- dist[upr*m,]
-  #   all.sim$lognormal$lwr <- dist[lwr*m,]
-  # }
-  # if ("Wald" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Wald", "Parameter 1"],data$values["Wald", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Wald", "Parameter 2"],data$values["Wald", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.wald(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Wald Distribution confidence envelopes')
-  #   all.sim$wald$upr <- dist[upr*m,]
-  #   all.sim$wald$lwr <- dist[lwr*m,]
-  # }
-  # if ("Weibull" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Weibull", "Parameter 1"],data$values["Weibull", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Weibull", "Parameter 2"],data$values["Weibull", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.weibull(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Weibull Distribution confidence envelopes')
-  #   all.sim$weibull$upr <- dist[upr*m,]
-  #   all.sim$weibull$lwr <- dist[lwr*m,]
-  # }
-  # if ("Gamma" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Gamma", "Parameter 1"],data$values["Gamma", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Gamma", "Parameter 2"],data$values["Gamma", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.gamma(x, as, bs)
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Gamma Distribution confidence envelopes')
-  #   all.sim$gamma$upr <- dist[upr*m,]
-  #   all.sim$gamma$lwr <- dist[lwr*m,]
-  # }
-  # if ("Log-sech" %in% best.fit) {
-  #   a <- msm::rtnorm(n,data$values["Log-sech", "Parameter 1"],data$values["Log-sech", "Parameter 1 SE"], 0, Inf)
-  #   b <- msm::rtnorm(n,data$values["Log-sech", "Parameter 2"],data$values["Log-sech", "Parameter 2 SE"], 0, Inf)
-  #   dist <- matrix(0,nrow=n,ncol=length(x))
-  #   for(i in 1:n){
-  #     as <- a[i]
-  #     bs <- b[i]
-  #     y <- dist.logsech(x, as, bs)
-  #     # y[is.nan(y)] <- NA
-  #     dist[i,] <- y
-  #   }
-  #   dist <- apply(dist,2,sort)
-  #   if(inherits(dist, "list")) {
-  #     m <- min(sapply(dist, length))
-  #     dist <- sapply(dist, '[', 1:m) }
-  #   m <- length(dist)/length(x)
-  #   if(m < n) message(n-m, ' random distributions were excluded from the Log-sech Distribution confidence envelopes')
-  #   all.sim$logsech$upr <- dist[upr*m,]
-  #   all.sim$logsech$lwr <- dist[lwr*m,]
-  # }
-  # }
-  # all.sim$melt$low95[all.sim$melt$low95<0] <- 0
     pred.disp
 }

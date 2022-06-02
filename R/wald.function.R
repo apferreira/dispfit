@@ -1,4 +1,4 @@
-wald.function <- function (data, chi.res.hist, ks.res.hist) {
+wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.wald <- function (r, par) {
     a <- par[1] ## location parameter, mean
     b <- par[2] ## scale parameter
@@ -92,8 +92,8 @@ wald.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.wald.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.wald.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.wald.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.wald.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.wald.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.wald.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.ini <- par.2.wald - n.se * par.2.se.wald
   if (par.2.ini <= 0) {
@@ -126,8 +126,8 @@ wald.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
   prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
 
-  par.2.wald.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
-  par.2.wald.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.wald.opt$value + qchisq(0.95, 1)/2)$y
+  par.2.wald.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.wald.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.2.wald.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.wald.opt$value + qchisq(confidence.level, 1)/2)$y
   # parameter estimate standard error
   par.1.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[1]
   par.2.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[2]

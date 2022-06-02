@@ -33,9 +33,12 @@
 #' ## display table
 #' fit$distribution.selection
 
-dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", extreme.values = FALSE) {
+dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", confidence.level = 0.95, extreme.values = FALSE) {
   # require("msm")
   # require("numDeriv")
+  if (confidence.level > 1 || confidence.level < 0)
+  {stop('value for confidence.level must be between 0 and 1')}
+
   kernel.fit <- list()
   values <- setNames(data.frame(matrix(ncol = 21, nrow = 1)),  c("AIC", "AICc", "BIC", "Chi-squared value", "Chi-squared significance",
                                                                  "Kolmogorov-Smirnov value", "K-S significance",
@@ -63,7 +66,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
   if (isFALSE(extreme.values)) {
     if ("all" %in% distribution | "rayleigh" %in% distribution) {
       message(paste("Fitting Rayleigh distribution..."))
-      rayleigh.values <- rayleigh.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      rayleigh.values <- rayleigh.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$rayleigh <- rayleigh.values$opt
       values <- rbind(values, setNames(rayleigh.values$res, names(values)))
@@ -71,7 +74,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     if ("all" %in% distribution | "exponential" %in% distribution) {
       message(paste("Fitting Exponential distribution..."))
-      exponential.values <- exponential.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      exponential.values <- exponential.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$exponential <- exponential.values$opt
       values <- rbind(values, setNames(exponential.values$res, names(values)))
@@ -79,7 +82,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     }
     if ("all" %in% distribution | "general normal" %in% distribution) {
       message(paste("Fitting Generalized Normal distribution..."))
-      generalnormal.values <- generalnormal.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      generalnormal.values <- generalnormal.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$generalnormal <- generalnormal.values$opt
       values <- rbind(values, setNames(generalnormal.values$res, names(values)))
@@ -88,7 +91,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 4 ### 2Dt / BIVARIATE STUDENT'S T
     if ("all" %in% distribution | "2Dt" %in% distribution) {
       message(paste("Fitting 2Dt distribution..."))
-      twodt.values <- twodt.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      twodt.values <- twodt.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$twodt <- twodt.values$opt
       values <- rbind(values, setNames(twodt.values$res, names(values)))
@@ -97,7 +100,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 5 ### POWER-LAW / GEOMETRIC
     if ("all" %in% distribution | "geometric" %in% distribution) {
       message(paste("Fitting Geometric distribution..."))
-      geometric.values <- geometric.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      geometric.values <- geometric.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$geometric <- geometric.values$opt
       values <- rbind(values, setNames(geometric.values$res, names(values)))
@@ -117,7 +120,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 8 ### LOGNORMAL ### DONE!
     if ("all" %in% distribution | "lognormal" %in% distribution) {
       message(paste("Fitting Log-Normal distribution..."))
-      lognorm.values <- lognorm.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      lognorm.values <- lognorm.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$lognorm <- lognorm.values$opt
       values <- rbind(values, setNames(lognorm.values$res, names(values)))
@@ -128,7 +131,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 10 ### WALD (INVERSE GAUSSIAN) ### DONE!
     if ("all" %in% distribution | "wald" %in% distribution) {
       message(paste("Fitting Wald distribution..."))
-      wald.values <- wald.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      wald.values <- wald.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$wald <- wald.values$opt
       values <- rbind(values, setNames(wald.values$res, names(values)))
@@ -137,7 +140,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 11 ### WEIBULL ### DONE!
     if ("all" %in% distribution | "weibull" %in% distribution) {
       message(paste("Fitting Weibull distribution..."))
-      weibull.values <- weibull.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      weibull.values <- weibull.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$weibull <- weibull.values$opt
       values <- rbind(values, setNames(weibull.values$res, names(values)))
@@ -146,7 +149,7 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", ext
     ### 12 ### GAMMA ### DONE!
     if ("all" %in% distribution | "gamma" %in% distribution) {
       message(paste("Fitting Gamma distribution..."))
-      gamma.values <- gamma.function(kernel.fit$data, chi.res.hist, ks.res.hist)
+      gamma.values <- gamma.function(kernel.fit$data, chi.res.hist, ks.res.hist, confidence.level)
 
       kernel.fit$gamma <- gamma.values$opt
       values <- rbind(values, setNames(gamma.values$res, names(values)))

@@ -20,8 +20,6 @@
 #' plot(test)
 
 plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE) {
-  # require("ggplot2")
-  # require("reshape2")
 
   if (is.null(fit.criteria)) {
     best.fit <- row.names(data$values[1,])
@@ -42,349 +40,85 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
              ggplot2::labs(x = "Distance (m)", y = "Probability"))
   }
 
-  all.sim <- list()
-  x <- 1:floor(max(data$data))
-  if ("Rayleigh" %in% best.fit) {
-    dist.rayleigh <- function (r, a) {
-      fg <- 2*pi*r*(1/(pi*a^2)) * exp(-r^2/a^2)
-      return(fg)
-    }
-    all.sim$rayleigh <- data.frame(distance = x, rayleigh = dist.rayleigh(x, data$rayleigh$par))
-  }
-  if ("Exponential" %in% best.fit) {
-    dist.exponential <- function (r, a) {
-      fexponential <-  2*pi*r*(1 / (2 * pi * a ^ 2 )) * exp(-r/a) # corrected function, adapted from Nathan 2012
-      return(fexponential)
-    }
-    all.sim$exponential <- data.frame(distance = x, exponential = dist.exponential(x, data$exponential$par))
-  }
-  if ("Generalized Normal" %in% best.fit) {
-    dist.generalnormal <- function (r, a, b) {
-      fgeneralnormal <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r / a) ^ b)
-      return(fgeneralnormal)
-    }
-    all.sim$generalnormal <- data.frame(distance = x, generalnormal = dist.generalnormal(x, data$generalnormal$par[1], data$generalnormal$par[2]))
-  }
-  if ("2Dt" %in% best.fit) {
-    dist.2dt <- function (r, a, b) {
-      f2dt <- 2*pi*r*((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
-      return(f2dt)
-    }
-    all.sim$twodt <- data.frame(distance = x, twodt = dist.2dt(x, data$values["2Dt", "Parameter 1"], data$values["2Dt", "Parameter 2"]))
-  }
-  if ("Geometric" %in% best.fit) {
-    dist.geometric <- function (r, a, b) {
-      fgeometric <- 2*pi*r*(((b - 2) * (b - 1)) / (2 * pi * (a^2))) * ((1 + (r / a)) ^ -b)
-      return(fgeometric)
-    }
-    all.sim$geometric <- data.frame(distance = x, geometric = dist.geometric(x, data$geometric$par[1], data$geometric$par[2]))
-  }
-  if ("Logistic" %in% best.fit) {
-    dist.logistic <- function (r, a, b) {
-      flogistic <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2/b) * gamma(1-(2/b)) )) * ((1 + ((r^b) / (a^b)))^(-1))
-      return(flogistic)
-    }
-    all.sim$logistic <- data.frame(distance = x, logistic = dist.logistic(x, data$logistic$par[1], data$logistic$par[2]))
-  }
-  if ("Log-Normal" %in% best.fit) {
-    dist.lognormal <- function (r, a, b) {
-      flognorm <- 2*pi*r * (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
-      return(flognorm)
-    }
-    all.sim$lognormal <- data.frame(distance = x, lognormal =  dist.lognormal(x, data$lognorm$par[1], data$lognorm$par[2]))
-  }
-  if ("Wald" %in% best.fit) {
-    dist.wald <- function (r, a, b) {
-      fwald <- 2*pi*r * (sqrt(b)/sqrt(8 * (pi^3) * (r^5))) * exp(-(b * ((r - a)^2))/(2 * (a^2) * r))
-      return(fwald)
-    }
-    all.sim$wald <- data.frame(distance = x, wald = dist.wald(x, data$wald$par[1], data$wald$par[2]))
-  }
-  if ("Weibull" %in% best.fit) {
-    dist.weibull <- function (r, a, b) {
-      fw <- 2*pi*r * (b/(2*pi*a^b)) * (r^(b-2)) * exp(-(r^b/a^b)) ## function from Austerlitz 2004
-      return(fw)
-    }
-    all.sim$weibull <- data.frame(distance = x, weibull = dist.weibull(x, data$weibull$par[1], data$weibull$par[2]))
-  }
-  if ("Gamma" %in% best.fit) {
-    dist.gamma <- function (r, a, b) {
-      fgamma <- 2*pi*r * (1 / (2 * pi * (a^2) * gamma(b))) * ((r/a)^(b-2)) * exp(-r/a)
-      return(fgamma)
-    }
-    all.sim$gamma <- data.frame(distance = x, gamma = dist.gamma(x, data$gamma$par[1], data$gamma$par[2]))
-  }
-  if ("Log-sech" %in% best.fit) {
-    dist.logsech <- function (r, a, b) {
-      flogsech <- 2*pi*r * (1 / ((pi^2) * b * (r^2))) / (((r / a)^(1 / b)) + ((r / a) ^ -(1 / b)))
-      return(flogsech)
-    }
-    all.sim$logsech <- data.frame(distance = x, logsech = dist.logsech(x, data$logsech$par[1], data$logsech$par[2]))
-  }
-  # if ("Cauchy" %in% best.fit) {
-  #   dist.cauchy <- function (r, a, b) {
-  #     fcauchy <- 2*pi*r * (1/(2*pi*r))*(1 / (pi*b)) / (1 + ((r-a)/b)^2)
-  #     return(fcauchy)
-  #   }
-  #   all.sim$cauchy <- data.frame(distance = 0:floor(max(data$data)), cauchy = dist.cauchy(0:floor(max(data$data)), data$cauchy$par[1], data$cauchy$par[2]))
-  # }
-  # if ("Gumbel" %in% best.fit) {
-  #   dist.gumbel <- function (r, a, b) {
-  #     fgumbel <- 2*pi*r * (1/(2*pi*r))*(1/b) * exp(-((r - a)/b + exp(-(r - a)/b))) ## pdf from Forbes 2011
-  #     return(fgumbel)
-  #   }
-  #   all.sim$gumbel <- data.frame(distance = 0:floor(max(data$data)), gumbel = dist.gumbel(0:floor(max(data$data)), data$gumbel$par[1], data$gumbel$par[2]))
-  # }
-  # if ("Frechet" %in% best.fit) {
-  #   dist.frechet <- function (r, a, b) {
-  #     ffrechet <- 2*pi*r * (1/(2*pi*r)) * (a/b) * ((r/b)^(-1-a)) * exp(-(r/b)^-a)
-  #     return(ffrechet)
-  #   }
-  #   all.sim$frechet <- data.frame(distance = 0:floor(max(data$data)), frechet = dist.frechet(0:floor(max(data$data)), data$frechet$par[1], data$frechet$par[2]))
-  # }
+  pred <- predict.dispfit(data = data, fit.criteria = fit.criteria, criteria.dif = criteria.dif, envelopes = envelopes)
+  pred.basic <- lapply(pred, function(x) x[,1:2])
 
-  all.sim$melt <- reshape2::melt(all.sim, id = "distance")
-  all.sim$melt$variable <- as.character(all.sim$melt$variable)
-  all.sim$melt$variable[which(all.sim$melt$variable == "rayleigh")] <- "Rayleigh"
-  all.sim$melt$variable[all.sim$melt$variable == "exponential"] <- "Exponential"
-  all.sim$melt$variable[all.sim$melt$variable == "generalnormal"] <- "Generalized Normal"
-  all.sim$melt$variable[all.sim$melt$variable == "twodt"] <- "2Dt"
-  all.sim$melt$variable[all.sim$melt$variable == "geometric"] <- "Geometric"
-  all.sim$melt$variable[all.sim$melt$variable == "logistic"] <- "Logistic"
-  all.sim$melt$variable[all.sim$melt$variable == "lognormal"] <- "Log-Normal"
-  all.sim$melt$variable[all.sim$melt$variable == "wald"] <- "Wald"
-  all.sim$melt$variable[all.sim$melt$variable == "weibull"] <- "Weibull"
-  all.sim$melt$variable[all.sim$melt$variable == "gamma"] <- "Gamma"
-  all.sim$melt$variable[all.sim$melt$variable == "logsech"] <- "Log-sech"
-  all.sim$melt$variable[all.sim$melt$variable == "cauchy"] <- "Cauchy"
-  all.sim$melt$variable[all.sim$melt$variable == "gumbel"] <- "Gumbel"
-  all.sim$melt$variable[all.sim$melt$variable == "frechet"] <- "Frechet"
+  pred.basic$melt <- reshape2::melt(pred.basic, id = "distance")
+  pred.basic$melt$variable <- as.character(pred.basic$melt$variable)
+  pred.basic$melt$variable[pred.basic$melt$variable == "rayleigh"] <- "Rayleigh"
+  pred.basic$melt$variable[pred.basic$melt$variable == "exponential"] <- "Exponential"
+  pred.basic$melt$variable[pred.basic$melt$variable == "generalnormal"] <- "Generalized Normal"
+  pred.basic$melt$variable[pred.basic$melt$variable == "twodt"] <- "2Dt"
+  pred.basic$melt$variable[pred.basic$melt$variable == "geometric"] <- "Geometric"
+  pred.basic$melt$variable[pred.basic$melt$variable == "logistic"] <- "Logistic"
+  pred.basic$melt$variable[pred.basic$melt$variable == "lognormal"] <- "Log-Normal"
+  pred.basic$melt$variable[pred.basic$melt$variable == "wald"] <- "Wald"
+  pred.basic$melt$variable[pred.basic$melt$variable == "weibull"] <- "Weibull"
+  pred.basic$melt$variable[pred.basic$melt$variable == "gamma"] <- "Gamma"
+  pred.basic$melt$variable[pred.basic$melt$variable == "logsech"] <- "Log-sech"
 
   if (isTRUE(envelopes)) {
-    n <- 4000
     if ("Rayleigh" %in% best.fit) {
-      a <- msm::rtnorm(n, data$values["Rayleigh", "Parameter 1"], data$values["Rayleigh", "Parameter 1 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        y <- dist.rayleigh(x, as)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Rayleigh Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Rayleigh"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Rayleigh"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Rayleigh"] <- pred$rayleigh$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Rayleigh"] <- pred$rayleigh$lwr
     }
     if ("Exponential" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Exponential", "Parameter 1"],data$values["Exponential", "Parameter 1 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        y <- dist.exponential(x, as)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Exponential Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Exponential"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Exponential"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Exponential"] <- pred$exponential$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Exponential"] <- pred$exponential$lwr
     }
     if ("Generalized Normal" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 1"],data$values["Generalized Normal", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Generalized Normal", "Parameter 2"],data$values["Generalized Normal", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.generalnormal(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Generalized Normal Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Generalized Normal"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Generalized Normal"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Generalized Normal"] <- pred$generalnormal$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Generalized Normal"] <- pred$generalnormal$lwr
     }
     if ("2Dt" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["2Dt", "Parameter 1"],data$values["2Dt", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["2Dt", "Parameter 2"],data$values["2Dt", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.2dt(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the 2Dt Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "2Dt"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "2Dt"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "2Dt"] <- pred$twodt$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "2Dt"] <- pred$twodt$lwr
     }
     if ("Geometric" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Geometric", "Parameter 1"],data$values["Geometric", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Geometric", "Parameter 2"],data$values["Geometric", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.geometric(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist, 2, sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m)} # doesn't seem replicable, have to find another solution
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Geometric Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Geometric"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Geometric"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Geometric"] <- pred$geometric$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Geometric"] <- pred$geometric$lwr
     }
     if ("Logistic" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Logistic", "Parameter 1"],data$values["Logistic", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Logistic", "Parameter 2"],data$values["Logistic", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.logistic(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist, 2, sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Logistic Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Logistic"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Logistic"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Logistic"] <- pred$logistic$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Logistic"] <- pred$logistic$lwr
     }
     if ("Log-Normal" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 1"],data$values["Log-Normal", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Log-Normal", "Parameter 2"],data$values["Log-Normal", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.lognormal(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Log-Normal Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Log-Normal"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Log-Normal"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Log-Normal"] <- pred$lognormal$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Log-Normal"] <- pred$lognormal$lwr
     }
     if ("Wald" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Wald", "Parameter 1"],data$values["Wald", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Wald", "Parameter 2"],data$values["Wald", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.wald(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Wald Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Wald"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Wald"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Wald"] <- pred$wald$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Wald"] <- pred$wald$lwr
     }
     if ("Weibull" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Weibull", "Parameter 1"],data$values["Weibull", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Weibull", "Parameter 2"],data$values["Weibull", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.weibull(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Weibull Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Weibull"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Weibull"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Weibull"] <- pred$weibull$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Weibull"] <- pred$weibull$lwr
     }
     if ("Gamma" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Gamma", "Parameter 1"],data$values["Gamma", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Gamma", "Parameter 2"],data$values["Gamma", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.gamma(x, as, bs)
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Gamma Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Gamma"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Gamma"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Gamma"] <- pred$gamma$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Gamma"] <- pred$gamma$lwr
     }
     if ("Log-sech" %in% best.fit) {
-      a <- msm::rtnorm(n,data$values["Log-sech", "Parameter 1"],data$values["Log-sech", "Parameter 1 SE"], 0, Inf)
-      b <- msm::rtnorm(n,data$values["Log-sech", "Parameter 2"],data$values["Log-sech", "Parameter 2 SE"], 0, Inf)
-      dist <- matrix(0,nrow=n,ncol=length(x))
-      for(i in 1:n){
-        as <- a[i]
-        bs <- b[i]
-        y <- dist.logsech(x, as, bs)
-        # y[is.nan(y)] <- NA
-        dist[i,] <- y
-      }
-      dist <- apply(dist,2,sort)
-      if(inherits(dist, "list")) {
-        m <- min(sapply(dist, length))
-        dist <- sapply(dist, '[', 1:m) }
-      m <- length(dist)/length(x)
-      if(m < n) message(n-m, ' random distributions were excluded from the Log-sech Distribution confidence envelopes')
-      all.sim$melt$upp95[all.sim$melt$variable == "Log-sech"] <- dist[.975*m,]
-      all.sim$melt$low95[all.sim$melt$variable == "Log-sech"] <- dist[.025*m,]
+      pred.basic$melt$upr[pred.basic$melt$variable == "Log-sech"] <- pred$logsech$upr
+      pred.basic$melt$lwr[pred.basic$melt$variable == "Log-sech"] <- pred$logsech$lwr
     }
-    all.sim$melt$low95[all.sim$melt$low95<0] <- 0
 
     ggplot2::ggplot() +
       ggplot2::theme_light() +
-      ggplot2::geom_line(data = all.sim$melt, ggplot2::aes(x = distance, y = value, colour = variable), lineend = "round") +
-      ggplot2::geom_line(data = all.sim$melt, ggplot2::aes(x = distance, y=upp95, col = variable), linetype = "dotted", show.legend = F) +
-      ggplot2::geom_line(data = all.sim$melt, ggplot2::aes(x = distance, y=low95, col = variable), linetype = "dotted", show.legend = F) +
-      ggplot2::geom_ribbon(data = all.sim$melt, ggplot2::aes(x = distance, ymax = upp95, ymin = low95, fill = variable), alpha=0.15, show.legend = F) +
+      ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y = value, colour = variable), lineend = "round") +
+      ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y=upr, col = variable), linetype = "dotted", show.legend = F) +
+      ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y=lwr, col = variable), linetype = "dotted", show.legend = F) +
+      ggplot2::geom_ribbon(data = pred.basic$melt, ggplot2::aes(x = distance, ymax = upr, ymin = lwr, fill = variable), alpha=0.15, show.legend = F) +
       { if(plot.data) ggplot2::stat_density(data = data.frame(x=data$data), ggplot2::aes(x=x), colour = "black", geom = "line", size = 1) } +
-      ggplot2::ylim(0, max(all.sim$melt$upp95, na.rm=T)) +
-      ggplot2::labs(x = "Distance (m)", y = "Probability", colour = "Distribution")
+      ggplot2::ylim(0, (1.2*max(pred.basic$melt$upr, na.rm=T))) +
+      ggplot2::coord_cartesian(ylim=c(0, max(hist(data$data, breaks = length(data$data), plot = F)$density))) +
+      ggplot2::labs(x = "Distance", y = "Density", colour = "Distribution")
   }
   else {
-   ggplot2::ggplot() +
+    ggplot2::ggplot() +
       ggplot2::theme_light() +
-      ggplot2::geom_line(data = all.sim$melt, ggplot2::aes(x = distance, y = value, colour = variable), lineend = "round") +
+      ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y = value, colour = variable), lineend = "round") +
       { if(plot.data) ggplot2::stat_density(data = data.frame(x=data$data), ggplot2::aes(x=x), colour = "black", geom = "line", size = 1)} +
-      ggplot2::labs(x = "Distance (m)", y = "Probability", colour = "Distribution")
+      ggplot2::labs(x = "Distance", y = "Density", colour = "Distribution")
   }
 }

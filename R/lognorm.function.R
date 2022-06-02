@@ -1,4 +1,4 @@
-lognorm.function <- function (data, chi.res.hist, ks.res.hist) {
+lognorm.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.lognorm <- function (par, r) {
     a <- par[1]
     b <- par[2]
@@ -95,8 +95,8 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.lognorm.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.lognorm.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.lognorm.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.lognorm.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.ini <- par.2.lognorm - n.se * par.2.se.lognorm
   if (par.2.ini <= 0) {
@@ -129,8 +129,8 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
   prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
 
-  par.2.lognorm.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
-  par.2.lognorm.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.lognorm.opt$value + qchisq(0.95, 1)/2)$y
+  par.2.lognorm.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.2.lognorm.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
 
   # mean dispersal distance
   mean.lognorm <- dist.lognorm.opt$par[1] * exp((dist.lognorm.opt$par[2]^2)/2)

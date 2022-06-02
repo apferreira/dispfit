@@ -1,4 +1,4 @@
-rayleigh.function <- function (data, chi.res.hist, ks.res.hist) {
+rayleigh.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.rayleigh <- function (r, a) {
     fg <-(1/(pi*a^2)) * exp(-r^2/a^2) ## Rayleigh, as defined in Nathan 2012
     -sum(log(fg)) ## Negative Log Likelihood
@@ -72,8 +72,8 @@ rayleigh.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.rayleigh.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.rayleigh.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.rayleigh.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.rayleigh.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.rayleigh.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.rayleigh.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.rayleigh.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.rayleigh.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.rayleigh.CIlow <- NA
   par.2.rayleigh.CIupp <- NA

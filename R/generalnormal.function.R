@@ -1,4 +1,4 @@
-generalnormal.function <- function (data, chi.res.hist, ks.res.hist) {
+generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.generalnormal <- function (r, par) {
     a <- par[1] ## scale
     b <- par[2] ## shape
@@ -136,8 +136,8 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.generalnormal.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.generalnormal.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.generalnormal.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.generalnormal.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.generalnormal.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.generalnormal.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.ini <- par.2.generalnormal - n.se * par.2.se.generalnormal
   if (par.2.ini <= 0) {
@@ -170,8 +170,8 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
   prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
 
-  par.2.generalnormal.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
-  par.2.generalnormal.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.generalnormal.opt$value + qchisq(0.95, 1)/2)$y
+  par.2.generalnormal.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.generalnormal.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.2.generalnormal.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.generalnormal.opt$value + qchisq(confidence.level, 1)/2)$y
   # mean dispersal distance
   mean.generalnormal <- dist.generalnormal.opt$par[1] * (gamma(3/dist.generalnormal.opt$par[2])/gamma(2/dist.generalnormal.opt$par[2]))
   mean.stderr.generalnormal <- msm::deltamethod(~ x1 * (gamma(3/x2)/gamma(2/x2)),

@@ -1,4 +1,4 @@
-twodt.function <- function (data, chi.res.hist, ks.res.hist) {
+twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.2dt <- function (r, par) {
     a <- par[1] ## scale parameter
     b <- par[2] ## shape parameter
@@ -115,8 +115,8 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.2dt.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.2dt.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.2dt.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.2dt.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.2dt.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.2dt.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.ini <- par.2.2dt - n.se * par.2.se.2dt
   if (par.2.ini <= 0) {
@@ -149,8 +149,8 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
   prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
 
-  par.2.2dt.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.2dt.opt$value + qchisq(0.95, 1)/2)$y
-  par.2.2dt.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.2dt.opt$value + qchisq(0.95, 1)/2)$y
+  par.2.2dt.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.2.2dt.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
   # mean dispersal distance
   if (dist.2dt.opt$par[2] >= 3/2) {
     mean.2dt <- dist.2dt.opt$par[1] * (sqrt(pi)/2) * (exp(lgamma(dist.2dt.opt$par[2]-(3/2))-lgamma(dist.2dt.opt$par[2]-1)))

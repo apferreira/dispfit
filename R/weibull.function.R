@@ -1,4 +1,4 @@
-weibull.function <- function (data, chi.res.hist, ks.res.hist) {
+weibull.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.weibull <- function (r, par) {
     a <- par[1] ## scale
     b <- par[2] ## shape
@@ -97,8 +97,8 @@ weibull.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.weibull.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.weibull.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.weibull.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.weibull.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.weibull.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.weibull.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.ini <- par.2.weibull - n.se * par.2.se.weibull
   if (par.2.ini <= 0) {
@@ -131,8 +131,8 @@ weibull.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
   prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
 
-  par.2.weibull.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
-  par.2.weibull.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.weibull.opt$value + qchisq(0.95, 1)/2)$y
+  par.2.weibull.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.weibull.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.2.weibull.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.weibull.opt$value + qchisq(confidence.level, 1)/2)$y
   # mean dispersal distance ## from Austerlitz 2004
   mean.weibull <- dist.weibull.opt$par[1] * (gamma(1 + 1/dist.weibull.opt$par[2]))
   mean.stderr.weibull <- msm::deltamethod(~ x1 * (gamma(1 + 1/x2)), mean = dist.weibull.opt$par, cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.weibull.opt$par, r=data)) )

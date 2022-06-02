@@ -1,4 +1,4 @@
-exponential.function <- function (data, chi.res.hist, ks.res.hist) {
+exponential.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.exponential <- function (r, a) {
     fexponential <- (1 / (2 * pi * a ^ 2 )) * exp(-r/a) # corrected function, adapted from Nathan 2012
     -sum(log(fexponential))
@@ -74,8 +74,8 @@ exponential.function <- function (data, chi.res.hist, ks.res.hist) {
   prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
   prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 
-  par.1.exponential.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.exponential.opt$value + qchisq(0.95, 1)/2)$y
-  par.1.exponential.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.exponential.opt$value + qchisq(0.95, 1)/2)$y
+  par.1.exponential.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.exponential.opt$value + qchisq(confidence.level, 1)/2)$y
+  par.1.exponential.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.exponential.opt$value + qchisq(confidence.level, 1)/2)$y
 
   par.2.exponential.CIlow <- NA
   par.2.exponential.CIupp <- NA
