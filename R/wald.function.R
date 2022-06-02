@@ -52,6 +52,9 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   # parameter estimate
   par.1.wald <- dist.wald.opt$par[1]
   par.2.wald <- dist.wald.opt$par[2]
+  # parameter estimate standard error
+  par.1.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[1]
+  par.2.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[2]
   # parameter estimate confidence intervals
   log.dist.wald.ci <- function (r, a, b) {
     # a <- par[1] ## location parameter, mean
@@ -128,9 +131,6 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
 
   par.2.wald.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.wald.opt$value + qchisq(confidence.level, 1)/2)$y
   par.2.wald.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.wald.opt$value + qchisq(confidence.level, 1)/2)$y
-  # parameter estimate standard error
-  par.1.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[1]
-  par.2.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.wald.opt$par, r=data))))[2]
   # mean dispersal distance
   mean.wald <- dist.wald.opt$par[1]
   mean.stderr.wald <- par.1.se.wald
