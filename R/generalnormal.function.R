@@ -3,6 +3,10 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
     a <- par[1] ## scale
     b <- par[2] ## shape
     fgeneralnormal <- (b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r^b / a^b))
+    if(all(is.nan(fgeneralnormal)) || all(fgeneralnormal < 0))
+      return(NaN)
+    else
+      return(-sum(log(fgeneralnormal)))
     -sum(log(fgeneralnormal)) ##
   }
   dist.generalnormal <- function (r, a, b) {
