@@ -20,6 +20,8 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 
 	par.1.prof = numeric(len)
 	for (i in 1:len) {
+		par2.lower <- lower.limits[2] + 0.00001
+
 		if(inherits(upper.limits, "list")) {
 			if(inherits(upper.limits[[2]], "function"))
 				par2.upper <- upper.limits[[2]](c(par.1.est[i], NA), data)
@@ -28,9 +30,9 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		} else if(inherits(upper.limits, "numeric")) {
 			par2.upper <- upper.limits[2]
 		}
-
-		par.1.prof[i] <- optim(log.dist.ci, par = par2, a = par.1.est[i],
-			r = data, lower=lower.limits[2] + 0.00001, upper=par2.upper, method = "Brent")$value
+		
+		if(par2.upper > par2.lower)
+			par.1.prof[i] <- optim(log.dist.ci, par = par2, a = par.1.est[i], r = data, lower=par2.lower, upper=par2.upper, method = "Brent")$value
 	}
 
 	if (length(which(par.1.prof == 0) > 0)) {
@@ -61,6 +63,9 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 #		a=136;b=par.2.est[i]; r=data; (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
 #		max(r) / exp(sqrt(-log(1e-300) * (2 * (b ^ 2)))) = a
 #		sqrt(-1 / (2*log(m))) = b
+
+		par1.lower <- lower.limits[1] + 0.00001
+		
 		if(inherits(upper.limits, "list")) {
 			if(inherits(upper.limits[[1]], "function"))
 				par1.upper <- upper.limits[[1]](c(NA, par.2.est[i]), data)
@@ -70,7 +75,8 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 			par1.upper <- upper.limits[1]
 		}
 
-		par.2.prof[i] <- optim(log.dist.ci, par = par1, b = par.2.est[i], r = data, lower=lower.limits[1] + 0.00001, upper=par1.upper, method = "Brent")$value
+		if(par1.upper > par1.lower)
+			par.2.prof[i] <- optim(log.dist.ci, par = par1, b = par.2.est[i], r = data, lower=par1.lower, upper=par1.upper, method = "Brent")$value
 	}
 
 	if (length(which(par.2.prof == 0) > 0)) {
