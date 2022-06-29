@@ -2,37 +2,25 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.2dt <- function (r, par) {
     a <- par[1] ## scale parameter
     b <- par[2] ## shape parameter
+    if(a < 0 || b < 1) return(Inf)
+    
     f2dt <- ((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
-    -sum(log(f2dt)) ##
+
+    if(any(is.nan(f2dt)) || any(f2dt < 0))
+    	return(Inf)
+    else
+		return(-sum(log(f2dt)))
   }
   dist.2dt <- function (r, a, b) {
     f2dt <- 2*pi*r*((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
   }
   # initial values estimation
-  while (TRUE) {
-    SANN.2dt.opt <- optim (par = c(1, 1.000001), ## valor inicial para o "a"
+ 
+    dist.2dt.opt <- optim (par = c(1, 1.000001), ## valor inicial para o "a"
                            fn = log.dist.2dt, ## função a minimizar
                            r = data,
-                           method = "SANN",
-                           # lower = c(0, 0),
+                           method = "Nelder-Mead",
                            control = list(maxit = 10000))
-    try.2dt <- try(
-      dist.2dt.opt.try <- optim (par = c(SANN.2dt.opt$par[1], SANN.2dt.opt$par[2]), ## valor inicial para o "a"
-                                 fn = log.dist.2dt, ## função a minimizar
-                                 r = data,
-                                 method = "L-BFGS-B",
-                                 lower = c(0.000001, 1.000001),
-                                 upper = c(Inf, Inf),
-                                 control = list(maxit = 10000)),
-      silent=T)
-
-    if (class(try.2dt) != "try-error") {
-      dist.2dt.opt.try
-      break
-    }
-  }
-  # optimization procedure
-  dist.2dt.opt <- dist.2dt.opt.try
   # dist.2dt.opt <- optim (par = c(0.001, 1.001), ## valor inicial para o "a"
   #                        fn = log.dist.2dt, ## função a minimizar
   #                        r = data, ## dados
@@ -79,8 +67,14 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   log.dist.2dt.ci <- function (r, a, b) {
     # a <- par[1] ## scale parameter
     # b <- par[2] ## shape parameter
+    if(a < 0 || b < 1) return(Inf)
+    
     f2dt <- ((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
-    -sum(log(f2dt)) ##
+
+    if(any(is.nan(f2dt)) || any(f2dt < 0))
+    	return(Inf)
+    else
+		return(-sum(log(f2dt)))
   }
   n.se <- 30
   len <- 1000
@@ -92,17 +86,14 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
 
   par.1.prof = numeric(len)
+  
+   
   for (i in 1:len) {
-    possibleError <- tryCatch(
-      par.1.prof[i] <- optim(log.dist.2dt.ci, par = par.2.2dt, a = par.1.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value,
-      error = function(e) e)
-    if(!inherits(possibleError, "error")){
-      par.1.prof[i] <- optim(log.dist.2dt.ci, par = par.2.2dt, a = par.1.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value
-    }
+  	# upper limit:
+	# (1 + (r^2)/(a^2))^(-b) = M
+	# b = -log(M) / log(1 + (r^2)/(a^2))
+	  par.1.prof[i] <- optim(log.dist.2dt.ci, par = par.2.2dt, a = par.1.est[i],
+                         r = data, lower=1.00001, upper=-log(.Machine$double.xmin) / log(1 + (max(data)^2)/(par.1.est[i]^2)), method = "Brent")$value
   }
 
   if (length(which(par.1.prof == 0) > 0)) {
@@ -111,32 +102,28 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
 
   prof.lower <- par.1.prof[1:which.min(par.1.prof)]
   prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
-
-  prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
-  prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
-
   par.1.2dt.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
-  par.1.2dt.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
+
+  if(which.min(par.1.prof) == length(par.1.prof)) {
+    par.1.2dt.CIupp <- Inf
+  } else {
+    prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
+    prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
+    par.1.2dt.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
+  }
 
   par.2.ini <- par.2.2dt - n.se * par.2.se.2dt
-  if (par.2.ini <= 0) {
-    par.2.ini <- 0.01
+  if (par.2.ini <= 1) {
+    par.2.ini <- 1.01
   }
   par.2.fin <- par.2.2dt + n.se * par.2.se.2dt
   par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
 
   par.2.prof = numeric(len)
   for (i in 1:len) {
-    possibleError <- tryCatch(
       par.2.prof[i] <- optim(log.dist.2dt.ci, par = par.1.2dt, b = par.2.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value,
-      error = function(e) e)
-    if(!inherits(possibleError, "error")){
-      par.2.prof[i] <- optim(log.dist.2dt.ci, par = par.1.2dt, b = par.2.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value
-    }
+                             r = data, lower=0.00001, upper=10000,
+                             method = "Brent")$value
   }
 
   if (length(which(par.2.prof == 0) > 0)) {
@@ -145,12 +132,15 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
 
   prof.lower = par.2.prof[1:which.min(par.2.prof)]
   prof.par.2.lower = par.2.est[1:which.min(par.2.prof)]
-
-  prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
-  prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
-
   par.2.2dt.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
-  par.2.2dt.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
+
+  if(which.min(par.2.prof) == length(par.2.prof)) {
+    par.2.2dt.CIupp <- Inf
+  } else {
+    prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
+    prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
+    par.2.2dt.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.2dt.opt$value + qchisq(confidence.level, 1)/2)$y
+  }
   # mean dispersal distance
   if (dist.2dt.opt$par[2] >= 3/2) {
     mean.2dt <- dist.2dt.opt$par[1] * (sqrt(pi)/2) * (exp(lgamma(dist.2dt.opt$par[2]-(3/2))-lgamma(dist.2dt.opt$par[2]-1)))

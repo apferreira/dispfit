@@ -2,12 +2,14 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
   log.dist.generalnormal <- function (r, par) {
     a <- par[1] ## scale
     b <- par[2] ## shape
+    if(a < 0 || b < 0) return(Inf)
+    
     fgeneralnormal <- (b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r^b / a^b))
-    if(all(is.nan(fgeneralnormal)) || all(fgeneralnormal < 0))
-      return(NaN)
+    
+    if(any(is.nan(fgeneralnormal)) || any(fgeneralnormal < 0))
+    	return(NaN)
     else
-      return(-sum(log(fgeneralnormal)))
-    -sum(log(fgeneralnormal)) ##
+		return(-sum(log(fgeneralnormal)))
   }
   dist.generalnormal <- function (r, a, b) {
     fgeneralnormal <- 2*pi*r*(b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r / a) ^ b)
@@ -33,33 +35,9 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
                                    fn = log.dist.generalnormal, ## função a minimizar
                                    r = data,
                                    method = "Nelder-Mead",
-                                   # lower = c(0.000001, 0.00001),
-                                   #upper = c(Inf, Inf),
                                    control = list(maxit = 10000))
-  if (dist.generalnormal.opt$par[1] <= 0 | dist.generalnormal.opt$par[2] <= 0) {
-    while (TRUE) {
-      dist.generalnormal.opt <- optim (par = c(scale, shape), ## valor inicial para o "a"
-                                       fn = log.dist.generalnormal, ## função a minimizar
-                                       r = data,
-                                       method = "SANN",
-                                       # lower = c(0, 0),
-                                       control = list(maxit = 10000))
-      try.generalnormal <- try(
-        dist.generalnormal.opt.try <- optim (par = c(dist.generalnormal.opt$par[1], dist.generalnormal.opt$par[2]), ## valor inicial para o "a"
-                                             fn = log.dist.generalnormal, ## função a minimizar
-                                             r = data,
-                                             method = "L-BFGS-B",
-                                             lower = c(0.000001, 0.000001),
-                                             upper = c(Inf, Inf),
-                                             control = list(maxit = 10000)),
-        silent=T)
-      if (class(try.generalnormal) != "try-error") {
-        dist.generalnormal.opt.try
-        break
-      }
-    }
-    dist.generalnormal.opt <- dist.generalnormal.opt.try
-  }
+           
+  if (dist.generalnormal.opt$par[1] <= 0 || dist.generalnormal.opt$par[2] <= 0) stop("Unknown error condition, negative parameters")
 
   #   # output values
   # AIC
@@ -105,7 +83,13 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
     # a <- par[1] ## scale
     # b <- par[2] ## shape
     fgeneralnormal <- (b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r^b / a^b))
-    -sum(log(fgeneralnormal)) ##
+	if(any(is.nan(fgeneralnormal)) || any(fgeneralnormal < 0))
+		return(NaN)
+	else {
+		if(any(!is.finite(log(fgeneralnormal)))) return(Inf)
+		else
+			return(-sum(log(fgeneralnormal)))
+	}
   }
   n.se <- 30
   len <- 1000
@@ -118,17 +102,12 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
 
   par.1.prof <- numeric(len)
   for (i in 1:len) {
-    possibleError <- tryCatch(
-      par.1.prof[i] <- optim(log.dist.generalnormal.ci, par = par.2.generalnormal, a = par.1.est[i],
-                             r = data,
-                             method="Nelder-Mead")$value,
-      error = function(e) e)
-    if(!inherits(possibleError, "error")){
-      par.1.prof[i] <- optim(log.dist.generalnormal.ci, par = par.2.generalnormal, a = par.1.est[i],
-                             r = data,
-                             method="Nelder-Mead")$value
-    }
+	  # calculate upper bound corresponding to the value above which the logLik function returns Inf
+		upper <- min(log(log(.Machine$double.xmax)) / log(max(data) / par.1.est[i]), log(.Machine$double.xmax) / log(par.1.est[i]))
+		if(upper > 0.0001)
+		  	par.1.prof[i] <- optim(log.dist.generalnormal.ci, par = par.2.generalnormal, a = par.1.est[i], r = data, method="Brent", lower=0.0001, upper=upper)$value
   }
+  
 
   if (length(which(par.1.prof == 0) > 0)) {
     par.1.prof <- par.1.prof[-which(par.1.prof == 0)]
@@ -151,17 +130,14 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
   par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
 
   par.2.prof <- numeric(len)
+  
   for (i in 1:len) {
-    possibleError <- tryCatch(
-      par.2.prof[i] <- optim(log.dist.generalnormal.ci, par = par.1.generalnormal, b = par.2.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value,
-      error = function(e) e)
-    if(!inherits(possibleError, "error")){
-      par.2.prof[i] <- optim(log.dist.generalnormal.ci, par = par.1.generalnormal, b = par.2.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value
-    }
+  	if(par.2.est[i] >= 0 && is.finite(gamma(2 / par.2.est[i]))) {
+  		# calculate upper bound corresponding to the value above which the logLik function returns Inf
+  		upper <- sqrt(.Machine$double.xmax / (gamma(2 / par.2.est[i]) * 2 * pi))
+  		if(upper > 0.0001)
+		  	par.2.prof[i] <- optim(log.dist.generalnormal.ci, par = par.1.generalnormal, b = par.2.est[i], r = data, method = "Brent", lower=0.0001, upper=upper)$value
+  	}
   }
 
   if (length(which(par.2.prof == 0) > 0)) {
