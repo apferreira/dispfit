@@ -62,22 +62,22 @@ if (dist.logsech.opt$par[2] < 1) {
                                    lower = 0,
                                    upper = Inf))$value
 } else {
-  mean.logsech <- "Infinite Value"
+  mean.logsech <- Inf
 }
 if (dist.logsech.opt$par[2] < 1) {
-  mean.stderr.logsech <- "in progress"
+  mean.stderr.logsech <- NA
 } else {
-  mean.stderr.logsech <- "Infinite Value"
+  mean.stderr.logsech <- Inf
 }
 # variance
-variance.logsech <- "in progress"
-variance.stderr.logsech <-"in progress"
+variance.logsech <- NA
+variance.stderr.logsech <-NA
 # skewness
-skewness.logsech <- "in progress"
-skewness.stderr.logsech <- "in progress"
+skewness.logsech <- NA
+skewness.stderr.logsech <- NA
 # kurtosis
-kurtosis.logsech <- "in progress"
-kurtosis.stderr.logsech <- "in progress"
+kurtosis.logsech <- NA
+kurtosis.stderr.logsech <- NA
 # output
 res <- data.frame(aic.logsech, aicc.logsech, bic.logsech,
                              chi.squared.statistic.logsech, chi.squared.pvalue.logsech,g.max.logsech, KS.logsech,

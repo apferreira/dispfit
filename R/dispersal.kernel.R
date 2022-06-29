@@ -332,51 +332,51 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", con
       if (dist.frechet.opt$par[1] > 1) {
         mean.frechet <- dist.frechet.opt$par[2]*gamma(1-1/dist.frechet.opt$par[1])
       } else {
-        mean.frechet <- "Infinite Value"
+        mean.frechet <- Inf
       }
       if (dist.frechet.opt$par[1] > 1) {
         mean.stderr.frechet <-  msm::deltamethod(~ x2*gamma(1-1/x1), mean = dist.frechet.opt$par, cov = solve(numDeriv::hessian(log.dist.frechet, x=dist.frechet.opt$par, r=data)) )
       } else {
-        mean.stderr.frechet <- "Infinite Value"
+        mean.stderr.frechet <- Inf
       }
       # variance
       if (dist.frechet.opt$par[1] > 2) {
         variance.frechet <- dist.frechet.opt$par[2]^2 * (gamma(1-2/dist.frechet.opt$par[1]) - (gamma(1-1/dist.frechet.opt$par[1]))^2)
       } else {
-        variance.frechet <- "Infinite Value"
+        variance.frechet <- Inf
       }
       if (dist.frechet.opt$par[1] > 2) {
         variance.stderr.frechet <- msm::deltamethod(~ x2^2 * (gamma(1-2/x1) - (gamma(1-1/x1))^2),
                                                     mean = dist.frechet.opt$par,
                                                     cov = solve(numDeriv::hessian(log.dist.frechet, x=dist.frechet.opt$par, r=data)) )
       } else {
-        variance.stderr.frechet <- "Infinite Value"
+        variance.stderr.frechet <- Inf
       }
       # skewness
       if (dist.frechet.opt$par[1] > 3) {
         skewness.frechet <- (gamma(1-3/dist.frechet.opt$par[1]) - 3*gamma(1-2/dist.frechet.opt$par[1]) * gamma(1-1/dist.frechet.opt$par[1]) + 2*gamma(1-1/dist.frechet.opt$par[1])^3) / (sqrt((gamma(1-2/dist.frechet.opt$par[1]) - gamma(1-1/dist.frechet.opt$par[1])^2)^3))
       } else {
-        skewness.frechet <- "Infinite Value"
+        skewness.frechet <- Inf
       }
       if (dist.frechet.opt$par[1] > 3) {
         skewness.stderr.frechet <- msm::deltamethod(~ (gamma(1-3/x1) - 3*gamma(1-2/x1) * gamma(1-1/x1) + 2*gamma(1-1/x1)^3) / (sqrt((gamma(1-2/x1) - gamma(1-1/x1)^2)^3)),
                                                     mean = dist.frechet.opt$par,
                                                     cov = solve(numDeriv::hessian(log.dist.frechet, x=dist.frechet.opt$par, r=data)) )
       } else {
-        skewness.stderr.frechet <- "Infinite Value"
+        skewness.stderr.frechet <- Inf
       }
       # kurtosis
       if (dist.frechet.opt$par[1] > 4) {
         kurtosis.frechet <- -6 + ((gamma(1-4/dist.frechet.opt$par[1]) - 4*gamma(1-3/dist.frechet.opt$par[1]) * gamma(1-1/dist.frechet.opt$par[1]) + 3*gamma(1-2/dist.frechet.opt$par[1])^2) / (gamma(1-2/dist.frechet.opt$par[1]) - gamma(1-1/dist.frechet.opt$par[1])^2)^2)
       } else {
-        kurtosis.frechet <- "Infinite Value"
+        kurtosis.frechet <- Inf
       }
       if (dist.frechet.opt$par[1] > 4) {
         kurtosis.stderr.frechet <- msm::deltamethod(~ -6 + ((gamma(1-4/x1) - 4*gamma(1-3/x1) * gamma(1-1/x1) + 3*gamma(1-2/x1)^2) / (gamma(1-2/x1) - gamma(1-1/x1)^2)^2),
                                                     mean = dist.frechet.opt$par,
                                                     cov = solve(numDeriv::hessian(log.dist.frechet, x=dist.frechet.opt$par, r=data)) )
       } else {
-        kurtosis.stderr.frechet <- "Infinite Value"
+        kurtosis.stderr.frechet <- Inf
       }
       # output
       frechet.values <- data.frame(aic.frechet, aicc.frechet, bic.frechet,

@@ -68,66 +68,66 @@ geometric.function <- function (data, chi.res.hist, ks.res.hist, confidence.leve
   if (dist.opt$par[2] >= 3) {
     mean.geometric <- (2 * dist.opt$par[1]) / (dist.opt$par[2]-3)
   } else {
-    mean.geometric <- "Infinite Value"
+    mean.geometric <- Inf
   }
   if (dist.opt$par[2] >= 3) {
     mean.stderr.geometric <- msm::deltamethod(~ (2 * x1) / (x2-3),
                                               mean = dist.opt$par,
                                               cov = solve(numDeriv::hessian(log.dist.geometric, x=dist.opt$par, r=data)) )
   } else {
-    mean.stderr.geometric <- "Infinite Value"
+    mean.stderr.geometric <- Inf
   }
   # variance
   if (dist.opt$par[2] >= 4) {
     variance.geometric <- sqrt(6) * dist.opt$par[1] * sqrt(1/((dist.opt$par[2]-4) * (dist.opt$par[2]-3)))
   } else {
-    variance.geometric <- "Infinite Value"
+    variance.geometric <- Inf
   }
   if (dist.opt$par[2] >= 4) {
     variance.stderr.geometric <- msm::deltamethod(~ sqrt(6) * x1 * sqrt(1/((x2-4) * (x2-3))),
                                                   mean = dist.opt$par,
                                                   cov = solve(numDeriv::hessian(log.dist.geometric, x=dist.opt$par, r=data)) )
   } else {
-    variance.stderr.geometric <- "Infinite Value"
+    variance.stderr.geometric <- Inf
   }
   # standard deviation
   if (dist.opt$par[2] >= 4) {
     stdev.geometric <- sqrt(sqrt(6) * dist.opt$par[1] * sqrt(1/((dist.opt$par[2]-4) * (dist.opt$par[2]-3))))
   } else {
-    stdev.geometric <- "Infinite Value"
+    stdev.geometric <- Inf
   }
   if (dist.opt$par[2] >= 4) {
     stdev.stderr.geometric <- msm::deltamethod(~ sqrt(sqrt(6) * x1 * sqrt(1/((x2-4) * (x2-3)))),
                                                mean = dist.opt$par,
                                                cov = solve(numDeriv::hessian(log.dist.geometric, x=dist.opt$par, r=data)) )
   } else {
-    stdev.stderr.geometric <- "Infinite Value"
+    stdev.stderr.geometric <- Inf
   }
   # skewness
   if (dist.opt$par[2] >= 5) {
     skewness.geometric <- 2 * 3^(1/3) * dist.opt$par[1] * (1/((dist.opt$par[2] - 5) * (dist.opt$par[2] - 4) * (dist.opt$par[2] - 3)))^(1/3)
   } else {
-    skewness.geometric <- "Infinite Value"
+    skewness.geometric <- Inf
   }
   if (dist.opt$par[2] >= 5) {
     skewness.stderr.geometric <- msm::deltamethod(~ 2 * 3^(1/3) * x1 * (1/((x2 - 5) * (x2 - 4) * (x2 - 3)))^(1/3),
                                                   mean = dist.opt$par,
                                                   cov = solve(numDeriv::hessian(log.dist.geometric, x=dist.opt$par, r=data)) )
   } else {
-    skewness.stderr.geometric <- "Infinite Value"
+    skewness.stderr.geometric <- Inf
   }
   # kurtosis
   if (dist.opt$par[2] >= 6) {
     kurtosis.geometric <- 2^(3/4) * 15^(1/4) * dist.opt$par[1] * (1/((dist.opt$par[2] - 6) * (dist.opt$par[2] - 5) * (dist.opt$par[2] - 4) * (dist.opt$par[2] - 3)))^(1/4)
   } else {
-    kurtosis.geometric <- "Infinite Value"
+    kurtosis.geometric <- Inf
   }
   if (dist.opt$par[2] >= 6) {
     kurtosis.stderr.geometric <- msm::deltamethod(~ 2^(3/4) * 15^(1/4) * x2 * (1/((x2 - 6) * (x2 - 5) * (x2 - 4) * (x2 - 3)))^(1/4),
                                                   mean = dist.opt$par,
                                                   cov = solve(numDeriv::hessian(log.dist.geometric, x=dist.opt$par, r=data)) )
   } else {
-    kurtosis.stderr.geometric <- "Infinite Value"
+    kurtosis.stderr.geometric <- Inf
   }
   # output
   res <- data.frame(aic.geometric, aicc.geometric, bic.geometric,
@@ -138,3 +138,4 @@ geometric.function <- function (data, chi.res.hist, ks.res.hist, confidence.leve
                     skewness.geometric, skewness.stderr.geometric, kurtosis.geometric, kurtosis.stderr.geometric)
   geometric.values <- list("opt" = dist.opt, "res" = res)
 }
+

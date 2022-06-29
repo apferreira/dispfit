@@ -14,7 +14,10 @@ print.summary.dispfit <- function(x, ...)
   print("Distribution selection")
   print(x$selection)
   print("Distribution parameters")
-  print(x$parameters)
+  tmp <- x$parameters
+  tmp[tmp == Inf] <- "Infinite valuesss"
+  tmp[is.na(tmp)] <- "in progress"
+  print(tmp)
 }
 
 #' @export
@@ -23,7 +26,10 @@ print.dispfit <- function(x, ...)
   print("Distribution selection")
   print(x$distribution.selection)
   print("Distribution parameters")
-  print(x$distribution.parameters)
+  tmp <- x$distribution.parameters
+  tmp[tmp == Inf] <- "Infinite valuesss"
+  tmp[is.na(tmp)] <- "in progress"
+  print(tmp)
 }
 
 #' @export

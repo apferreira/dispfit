@@ -71,8 +71,8 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     mean.2dt <- dist.opt$par[1] * (sqrt(pi)/2) * (exp(lgamma(dist.opt$par[2]-(3/2))-lgamma(dist.opt$par[2]-1)))
     mean.stderr.2dt <- msm::deltamethod(~ x1 * (sqrt(pi)/2)*(exp(lgamma(x2-(3/2))-lgamma(x2-1))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
-    mean.2dt <- "Infinite Value"
-    mean.stderr.2dt <- "Infinite Value"
+    mean.2dt <- Inf
+    mean.stderr.2dt <- Inf
   }
 
   if (dist.opt$par[2] > 2) {
@@ -83,10 +83,10 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     stdev.2dt <- sqrt(dist.opt$par[1] * sqrt(1/(dist.opt$par[2]-2)))
     stdev.stderr.2dt <- msm::deltamethod(~ sqrt(x1 * sqrt(1/(x2-2))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
-    variance.2dt <- "Infinite Value"
-    variance.stderr.2dt <- "Infinite Value"
-    stdev.2dt <- "Infinite Value"
-    stdev.stderr.2dt <- "Infinite Value"
+    variance.2dt <- Inf
+    variance.stderr.2dt <- Inf
+    stdev.2dt <- Inf
+    stdev.stderr.2dt <- Inf
   }
 
   # skewness
@@ -94,8 +94,8 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     skewness.2dt <- (dist.opt$par[1]*(gamma(2.5) * exp(lgamma(dist.opt$par[2]-2.5) - lgamma(dist.opt$par[2]-1)))^(1/3))
     skewness.stderr.2dt <- msm::deltamethod(~ x1 * (gamma(2.5) * exp(lgamma(x2-2.5) - lgamma(x2-1)))^(1/3), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
-    skewness.2dt <- "Infinite Value"
-    skewness.stderr.2dt <- "Infinite Value"
+    skewness.2dt <- Inf
+    skewness.stderr.2dt <- Inf
   }
 
   # kurtosis
@@ -105,8 +105,8 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
                                             mean = dist.opt$par,
                                             cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
-    kurtosis.2dt <- "Infinite Value"
-    kurtosis.stderr.2dt <- "Infinite Value"
+    kurtosis.2dt <- Inf
+    kurtosis.stderr.2dt <- Inf
   }
 
   # output
