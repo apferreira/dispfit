@@ -62,7 +62,10 @@ dispersal.kernel <- function (data, distribution = "all", order.by = "AICc", con
   # }
   # cumulative.data <- cumulative.data/sum(res.hist$counts)
   # cumulative.data <- cumulative.data[!is.na(cumulative.data)]
-
+  possible.distributions <- c("all", "rayleigh", "exponential", "general normal", "2Dt", "geometric", "lognormal", "wald", "weibull", "gamma", "gumbel", "frechet")
+  if(any(!(distribution %in% possible.distributions)))
+  	stop("Possible values for 'distribution' are any of: ", paste(possible.distributions, collapse=", "))
+  	
   if (isFALSE(extreme.values)) {
     if ("all" %in% distribution | "rayleigh" %in% distribution) {
       message(paste("Fitting Rayleigh distribution..."))
