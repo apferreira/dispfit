@@ -47,7 +47,9 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 			}
 
 			if(par2.upper > par2.lower && is.finite(log.dist.ci(par.1.est[i], par2, data))) {
+#				tryCatch({
 				par.1.prof[i] <- optim(log.dist.ci, par = par2, a = par.1.est[i], r = data, lower=par2.lower, upper=par2.upper, method = "Brent")$value
+#				}, warning=function(w) browser())
 			}
 		}
 	} else {
