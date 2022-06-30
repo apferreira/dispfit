@@ -11,6 +11,8 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 	}
 	n.se <- 30
 	len <- 1000
+
+	# Par 1 CI
 	par.1.ini <- par1 - n.se * par.1.se
 	if (par.1.ini <= lower.limits[1]) {
 		par.1.ini <- lower.limits[1] + 0.01
@@ -18,9 +20,16 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 	par.1.fin <- par1 + n.se * par.1.se
 	par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
 
-	par.1.prof = numeric(len)
+	par.1.prof <- numeric(len)
 	for (i in 1:len) {
-		par2.lower <- lower.limits[2] + 0.00001
+		if(inherits(lower.limits, "list")) {
+			if(inherits(lower.limits[[2]], "function"))
+				par2.lower <- lower.limits[[2]](c(par.1.est[i], NA), data)
+			else
+				par2.lower <- lower.limits[[2]] + 0.00001
+		} else if(inherits(lower.limits, "numeric")) {
+			par2.lower <- lower.limits[2] + 0.00001
+		}
 
 		if(inherits(upper.limits, "list")) {
 			if(inherits(upper.limits[[2]], "function"))
@@ -30,9 +39,10 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		} else if(inherits(upper.limits, "numeric")) {
 			par2.upper <- upper.limits[2]
 		}
-		
-		if(par2.upper > par2.lower)
+
+		if(par2.upper > par2.lower && is.finite(log.dist.ci(par.1.est[i], par2, data))) {
 			par.1.prof[i] <- optim(log.dist.ci, par = par2, a = par.1.est[i], r = data, lower=par2.lower, upper=par2.upper, method = "Brent")$value
+		}
 	}
 
 	if (length(which(par.1.prof == 0) > 0)) {
@@ -50,9 +60,9 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
 		par.1.CIupp <- approx(prof.upper, prof.par.1.upper, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
 	}
+	
 
-### Par 2
-
+	# Par 2 CI
 	par.2.ini <- par2 - n.se * par.2.se
 	if (par.2.ini <= lower.limits[2]) {
 		par.2.ini <- lower.limits[2] + 0.01
@@ -62,13 +72,17 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 
 	par.2.prof <- numeric(len)
 	for (i in 1:len) {
-#		browser()
-#		a=136;b=par.2.est[i]; r=data; (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
-#		max(r) / exp(sqrt(-log(1e-300) * (2 * (b ^ 2)))) = a
-#		sqrt(-1 / (2*log(m))) = b
-
 		par1.lower <- lower.limits[1] + 0.00001
 		
+		if(inherits(lower.limits, "list")) {
+			if(inherits(lower.limits[[1]], "function"))
+				par1.lower <- lower.limits[[1]](c(NA, par.2.est[i]), data)
+			else
+				par1.lower <- lower.limits[[1]]
+		} else if(inherits(lower.limits, "numeric")) {
+			par1.lower <- lower.limits[1]
+		}
+
 		if(inherits(upper.limits, "list")) {
 			if(inherits(upper.limits[[1]], "function"))
 				par1.upper <- upper.limits[[1]](c(NA, par.2.est[i]), data)
@@ -78,8 +92,9 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 			par1.upper <- upper.limits[1]
 		}
 
-		if(par1.upper > par1.lower)
+		if(par1.upper > par1.lower && is.finite(log.dist.ci(par1, par.2.est[i], data))) {
 			par.2.prof[i] <- optim(log.dist.ci, par = par1, b = par.2.est[i], r = data, lower=par1.lower, upper=par1.upper, method = "Brent")$value
+		}
 	}
 
 	if (length(which(par.2.prof == 0) > 0)) {
