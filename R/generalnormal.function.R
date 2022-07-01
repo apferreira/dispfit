@@ -81,8 +81,22 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
   }
   
   par2.upper.limit <- function(pars, data) {
-	min(log(log(.Machine$double.xmax)) / log(max(data) / pars[1]), log(.Machine$double.xmax) / log(pars[1]))
+	# b=par2; a=par.1.est[i]; r=sort(data); (b / (2 * pi * (a^2) * gamma(2 / b))) * exp(-(r^b / a^b))
+
+	# Upper limits for b (minimum of)
+	# * exp(-(r^b / a^b)) = m
+	#   -(r/a)^b = log(m)
+	#   b = log(-log(m))/log(r/a)
+
+	# * r^b = M
+	#   b = log(M) / log(r)
+
+	min(
+		log(.Machine$double.xmax) / log(max(data)),
+		log(-log(.Machine$double.xmin)) / log(max(data) / pars[1])
+	)
   }
+  
   
   CI <- confint.dispfit(dist.opt, log.dist.generalnormal, data=data, lower=c(0, 0), upper=list(par1.upper.limit, par2.upper.limit), confidence.level=confidence.level)
 
