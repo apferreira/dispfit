@@ -11,11 +11,11 @@ geometric.function <- function (data, chi.res.hist, ks.res.hist, confidence.leve
     fgeometric <- 2*pi*r*(((b - 2) * (b - 1)) / (2 * pi * (a^2))) * ((1 + (r / a)) ^ -b)
   }
   # initial values estimation
-	dist.opt <- optim (par = c(1, 2.000001), ## valor inicial para o "a"
-		                         fn = log.dist.geometric, ## função a minimizar
-		                         r = data,
-		                         method = "Nelder-Mead",
-		                         control = list(maxit = 10000))
+  dist.opt <- optim (par = c(1, 2.000001), ## valor inicial para o "a"
+	                         fn = log.dist.geometric, ## função a minimizar
+	                         r = data,
+	                         method = "Nelder-Mead",
+	                         control = list(maxit = 10000))
   # dist.geometric.opt <- optim (par = c(0.00001, 3.00001), ## valor inicial para o "a"
   #                       fn = log.dist.geometric, ## função a minimizar
   #                       r = data, ## dados
@@ -62,7 +62,8 @@ geometric.function <- function (data, chi.res.hist, ks.res.hist, confidence.leve
 	-log(.Machine$double.xmin) / log(1 + (max(data) / pars[1]))
   }
   
-  CI <- confint.dispfit(dist.opt, log.dist.geometric, data=data, lower=c(0, 2), upper=list(10000, par2.upper.limit), confidence.level=confidence.level)
+
+  CI <- confint.dispfit(dist.opt, log.dist.geometric, data=data, lower=c(0, 2), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
 
   # mean dispersal distance
   if (dist.opt$par[2] >= 3) {

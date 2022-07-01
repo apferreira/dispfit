@@ -62,11 +62,16 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		par.1.prof <- par.1.prof[-which(par.1.prof == 0)]
 	}
 
-	prof.lower <- par.1.prof[1:which.min(par.1.prof)]
-	prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
-	par.1.CIlow <- approx(prof.lower, prof.par.1.lower, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
+	# in extreme cases, it is not possible to compute CI, so, prevent that
+	if(which.min(par.1.prof) == 1) {
+		par.1.CIlow <- NA
+	} else {
+		prof.lower <- par.1.prof[1:which.min(par.1.prof)]
+		prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
+		par.1.CIlow <- approx(prof.lower, prof.par.1.lower, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
+	}
 
-	if(which.min(par.1.prof) == length(par.1.prof)) {
+	if(which.min(par.1.prof) == length(par.1.prof) || which.min(par.1.prof) == 1) {
 		par.1.CIupp <- Inf
 	} else {
 		prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
@@ -115,11 +120,17 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 			par.2.prof <- par.2.prof[-which(par.2.prof == 0)]
 		}
 
-		prof.lower <- par.2.prof[1:which.min(par.2.prof)]
-		prof.par.2.lower <- par.2.est[1:which.min(par.2.prof)]
-		par.2.CIlow <- approx(prof.lower, prof.par.2.lower, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
 
-		if(which.min(par.2.prof) == length(par.2.prof)) {
+		# in extreme cases, it is not possible to compute CI, so, prevent that
+		if(which.min(par.2.prof) == 1) {
+			par.2.CIlow <- NA
+		} else {
+			prof.lower <- par.2.prof[1:which.min(par.2.prof)]
+			prof.par.2.lower <- par.2.est[1:which.min(par.2.prof)]
+			par.2.CIlow <- approx(prof.lower, prof.par.2.lower, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
+		}
+
+		if(which.min(par.2.prof) == length(par.2.prof) || which.min(par.2.prof) == 1) {
 			par.2.CIupp <- Inf
 		} else {
 			prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
