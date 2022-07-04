@@ -2,7 +2,9 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
   log.dist.lognorm <- function (par, r) {
     a <- par[1]
     b <- par[2]
+    if(a < 0 || b < 0) return(Inf)
     flognorm <- (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
+    if(any(exp(-(log(r / a)^2) / (2 * (b ^ 2))) == 0)) return(Inf)
     -sum(log(flognorm)) ## Negative Log Likelihood da lognormiana
   }
   dist.lognorm <- function (r, a, b) {
@@ -49,88 +51,21 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
   # if (g.max.lognorm < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
   #   KS.lognorm <- "Accept"
   # } else {KS.lognorm <- "Reject"}
-  # parameter estimate
-  par.1.lognorm <- dist.lognorm.opt$par[1]
-  par.2.lognorm <- dist.lognorm.opt$par[2]
-  # parameter estimate standard error
-  par.1.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[1]
-  par.2.se.lognorm <- sqrt(diag(solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data))))[2]
-  # parameter estimate confidence intervals
-  log.dist.lognorm.ci <- function (a, b, r) {
-    # a <- par[1]
-    # b <- par[2]
-    flognorm <- (1 / (((2 * pi) ^ (3/2)) * (b * (r ^ 2)))) * exp(-(log(r / a)^2) / (2 * (b ^ 2)))
-    -sum(log(flognorm)) ## Negative Log Likelihood da lognormiana
-  }
-  n.se <- 30
-  len <- 1000
-  par.1.ini <- par.1.lognorm - n.se * par.1.se.lognorm
-  if (par.1.ini <= 0) {
-    par.1.ini <- 0.01
-  }
-  par.1.fin <- par.1.lognorm + n.se * par.1.se.lognorm
-  par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
 
-  par.1.prof = numeric(len)
-  for (i in 1:len) {
-    possibleError <- tryCatch(
-      par.1.prof[i] <- optim(log.dist.lognorm.ci, par = par.2.lognorm, a = par.1.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value,
-      error = function(e) e)
-    if(!inherits(possibleError, "error")){
-      par.1.prof[i] <- optim(log.dist.lognorm.ci, par = par.2.lognorm, a = par.1.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value
-    }
+
+  # Confidence intervals
+  #		max a -> min(data) / exp(-sqrt(-log(M) * (2 * (b ^ 2))))
+  #		min a -> max(data) / exp(sqrt(-log(M) * (2 * (b ^ 2))))
+
+  par1.upper.limit <- function(pars, data) {
+    min(data) / exp(-sqrt(-log(.Machine$double.xmin) * (2 * (pars[2] ^ 2))))
   }
 
-  if (length(which(par.1.prof == 0) > 0)) {
-    par.1.prof <- par.1.prof[-which(par.1.prof == 0)]
-  }
+#  par1.lower.limit <- function(pars, data) {
+#    max(data) / exp(sqrt(-log(.Machine$double.xmin) * (2 * (pars[2] ^ 2))))
+#  }
 
-  prof.lower <- par.1.prof[1:which.min(par.1.prof)]
-  prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
-
-  prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
-  prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
-
-  par.1.lognorm.CIlow <- approx(prof.lower, prof.par.1.lower, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
-  par.1.lognorm.CIupp <- approx(prof.upper, prof.par.1.upper, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
-
-  par.2.ini <- par.2.lognorm - n.se * par.2.se.lognorm
-  if (par.2.ini <= 0) {
-    par.2.ini <- 0.01
-  }
-  par.2.fin <- par.2.lognorm + n.se * par.2.se.lognorm
-  par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
-
-  par.2.prof = numeric(len)
-  for (i in 1:len) {
-    possibleError <- tryCatch(
-      par.2.prof[i] <- optim(log.dist.lognorm.ci, par = par.1.lognorm, b = par.2.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value,
-      error = function(e) e)
-    if(!inherits(possibleError, "error")){
-      par.2.prof[i] <- optim(log.dist.lognorm.ci, par = par.1.lognorm, b = par.2.est[i],
-                             r = data,
-                             method = "Nelder-Mead")$value
-    }
-  }
-
-  if (length(which(par.2.prof == 0) > 0)) {
-    par.2.prof <- par.2.prof[-which(par.2.prof == 0)]
-  }
-
-  prof.lower <- par.2.prof[1:which.min(par.2.prof)]
-  prof.par.2.lower <- par.2.est[1:which.min(par.2.prof)]
-
-  prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
-  prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
-
-  par.2.lognorm.CIlow <- approx(prof.lower, prof.par.2.lower, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
-  par.2.lognorm.CIupp <- approx(prof.upper, prof.par.2.upper, xout = dist.lognorm.opt$value + qchisq(confidence.level, 1)/2)$y
+  CI <- confint.dispfit(dist.lognorm.opt, log.dist.lognorm, data=data, lower=c(0, sqrt(-1 / (2*log(.Machine$double.xmin)))), upper=list(par1.upper.limit, 100000), confidence.level=confidence.level)
 
   # mean dispersal distance
   mean.lognorm <- dist.lognorm.opt$par[1] * exp((dist.lognorm.opt$par[2]^2)/2)
@@ -150,9 +85,10 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
   # output
   res <- data.frame(aic.lognorm, aicc.lognorm, bic.lognorm,
                     chi.squared.statistic.lognorm, chi.squared.pvalue.lognorm, g.max.lognorm, KS.lognorm,
-                    par.1.lognorm, par.1.lognorm.CIlow, par.1.lognorm.CIupp,
-                    par.2.lognorm, par.2.lognorm.CIlow, par.2.lognorm.CIupp,
+                    dist.lognorm.opt$par[1], CI["par1.CIlow"], CI["par1.CIupp"],
+                    dist.lognorm.opt$par[2], CI["par2.CIlow"], CI["par2.CIupp"],
                     mean.lognorm, mean.stderr.lognorm, stdev.lognorm, stdev.stderr.lognorm,
                     skewness.lognorm, skewness.stderr.lognorm, kurtosis.lognorm, kurtosis.stderr.lognorm)
   lognorm.values <- list("opt" = dist.lognorm.opt, "res" = res)
 }
+

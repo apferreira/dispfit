@@ -135,7 +135,7 @@ mean.logistic <- dist.logistic.opt$par[1]^(1/dist.logistic.opt$par[2]) * (( gamm
 
 mean.stderr.logistic <- msm::deltamethod(~ x1 * ((gamma(3/x2) * gamma(1-(3/x2))) / (gamma(2/x2) * gamma(1-(2/x2))) ), mean = dist.logistic.opt$par, cov = solve(numDeriv::hessian(log.dist.logistic, x=dist.logistic.opt$par, r=data)) )
 # variance
-variance.logistic <- "in progress"
+variance.logistic <- NA
 # 1, 1/b, 1 + 1/b, -a^(-b) r^b
 # x <- 1000
 # par.2.logistic*x*hypergeo::hypergeo_buhring(1, 1/par.2.logistic, 1 + 1/par.2.logistic, -par.1.logistic^(-par.2.logistic)* x^par.2.logistic)
@@ -147,13 +147,13 @@ variance.logistic <- "in progress"
 #
 # buhring_eqn11
 # hypergeo
-variance.stderr.logistic <-"in progress"
+variance.stderr.logistic <-NA
 # skewness
-skewness.logistic <- "in progress"
-skewness.stderr.logistic <- "in progress"
+skewness.logistic <- NA
+skewness.stderr.logistic <- NA
 # kurtosis
-kurtosis.logistic <- "in progress"
-kurtosis.stderr.logistic <- "in progress"
+kurtosis.logistic <- NA
+kurtosis.stderr.logistic <- NA
 # output
 res <- data.frame(aic.logistic, aicc.logistic, bic.logistic,
                               chi.squared.statistic.logistic, chi.squared.pvalue.logistic, g.max.logistic, KS.logistic,
