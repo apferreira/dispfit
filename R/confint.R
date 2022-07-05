@@ -3,9 +3,9 @@ compute.par.limits <- function(lower.limits, upper.limits, pars, data, parameter
 		if(inherits(lower.limits[[parameter]], "function"))
 			par2.lower <- lower.limits[[parameter]](pars, data)
 		else
-			par2.lower <- lower.limits[[parameter]] + 0.00001
+			par2.lower <- lower.limits[[parameter]]
 	} else if(inherits(lower.limits, "numeric")) {
-		par2.lower <- lower.limits[parameter] + 0.00001
+		par2.lower <- lower.limits[parameter]
 	}
 
 	if(inherits(upper.limits, "list")) {
@@ -91,7 +91,7 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		}
 
 		count <- count + 1
-		if(last.value > threshold || count > max.trials || step < 1.e-10) break
+		if(last.value > threshold || count > max.trials || step < 1.e-12) break
 	}
 	if(debug) {
 		par(mfrow=c(2, 2))
@@ -99,8 +99,8 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		abline(v=approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y, h=threshold, lwd=2)
 	}
 
-	if(count > max.trials || step < 1.e-10) {
-		par.1.CIlow <- 0
+	if(count > max.trials || step < 1.e-12) {
+		par.1.CIlow <- lower.limits[1]
 		warning("Lower CI for 'a' is not accurate, I've given up after ", max.trials, " trials.")
 	} else
 		par.1.CIlow <- approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y
@@ -188,15 +188,15 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 			}
 
 			count <- count + 1
-			if(last.value > threshold || count > max.trials) break
+			if(last.value > threshold || count > max.trials || step < 1.e-12) break
 		}
 		if(debug) {
 			plot(par.2.prof, pch=19, cex=0.7)
 			abline(v=approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y, h=threshold, lwd=2)
 		}
 
-		if(count > max.trials) {
-			par.2.CIlow <- 0
+		if(count > max.trials || step < 1.e-12) {
+			par.2.CIlow <- lower.limits[2]
 			warning("Lower CI for 'b' is not accurate, I've given up after ", max.trials, " trials.")
 		} else
 			par.2.CIlow <- approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y

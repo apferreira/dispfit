@@ -54,7 +54,7 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   #   KS.wald <- "Accept"
   # } else {KS.wald <- "Reject"}
 
- CI <- confint.dispfit(dist.opt, log.dist.wald, data=data, lower=c(0, 0), upper=list(10000, 10000), confidence.level=confidence.level)  
+ CI <- confint.dispfit(dist.opt, log.dist.wald, data=data, lower=c(1e-6, 1e-6), upper=list(10000, 10000), confidence.level=confidence.level)  
  
   # mean dispersal distance
   mean.wald <- dist.opt$par[1]

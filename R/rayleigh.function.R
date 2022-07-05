@@ -17,7 +17,7 @@ rayleigh.function <- function (data, chi.res.hist, ks.res.hist, confidence.level
                               fn = log.dist.rayleigh, ## function to minimize
                               r = data, ## dados
                               method = "Brent", ## one-parameter method
-                              lower = 0.000001, ## lower-bound for parameter
+                              lower = 1e-6, ## lower-bound for parameter
                               upper = 100000)
   # output values
   # AIC
@@ -41,7 +41,7 @@ rayleigh.function <- function (data, chi.res.hist, ks.res.hist, confidence.level
   ks.d.rayleigh <- as.numeric(ks.rayleigh$statistic)
   ks.p.rayleigh <- as.numeric(ks.rayleigh$p.value)
 
-  CI <- confint.dispfit(dist.opt, log.dist.rayleigh, data=data, lower=c(0), upper=list(100000), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.opt, log.dist.rayleigh, data=data, lower=c(1e-6), upper=list(100000), confidence.level=confidence.level)
   
   # mean
   mean.rayleigh <- dist.opt$par*sqrt(pi)/2

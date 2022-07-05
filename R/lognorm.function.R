@@ -65,7 +65,7 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
 #    max(data) / exp(sqrt(-log(.Machine$double.xmin) * (2 * (pars[2] ^ 2))))
 #  }
 
-  CI <- confint.dispfit(dist.lognorm.opt, log.dist.lognorm, data=data, lower=c(0, sqrt(-1 / (2*log(.Machine$double.xmin)))), upper=list(par1.upper.limit, 100000), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.lognorm.opt, log.dist.lognorm, data=data, lower=c(1e-6, sqrt(-1 / (2*log(.Machine$double.xmin)))), upper=list(par1.upper.limit, 100000), confidence.level=confidence.level)
 
   # mean dispersal distance
   mean.lognorm <- dist.lognorm.opt$par[1] * exp((dist.lognorm.opt$par[2]^2)/2)

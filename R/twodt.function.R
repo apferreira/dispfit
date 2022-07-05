@@ -64,7 +64,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
 	-log(.Machine$double.xmin) / log(1 + (max(data)^2)/(pars[1]^2))
   }
   
-  CI <- confint.dispfit(dist.opt, log.dist.2dt, data=data, lower=c(0, 1), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.opt, log.dist.2dt, data=data, lower=c(1e-6, 1 + 1e-6), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
 
   # mean dispersal distance
   if (dist.opt$par[2] >= 3/2) {

@@ -63,7 +63,7 @@ geometric.function <- function (data, chi.res.hist, ks.res.hist, confidence.leve
   }
   
 
-  CI <- confint.dispfit(dist.opt, log.dist.geometric, data=data, lower=c(0, 2), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.opt, log.dist.geometric, data=data, lower=c(1e-6, 2 + 1e-6), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
 
   # mean dispersal distance
   if (dist.opt$par[2] >= 3) {
