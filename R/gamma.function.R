@@ -5,6 +5,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     if(a < 0 || b < 0) return(Inf)
     
     fgamma <- (1 / (2 * pi * (a^2) * gamma(b))) * ((r/a)^(b-2)) * exp(-r/a)
+    fgamma[fgamma == 0] <- .Machine$double.xmin
     -sum(log(fgamma)) ## Negative Log Likelihood
   }
   dist.gamma <- function (r, a, b) {
