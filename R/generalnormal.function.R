@@ -98,7 +98,7 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
   }
   
   
-  CI <- confint.dispfit(dist.opt, log.dist.generalnormal, data=data, lower=c(0, 0), upper=list(par1.upper.limit, par2.upper.limit), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.opt, log.dist.generalnormal, data=data, lower=c(1e-6, 1e-6), upper=list(par1.upper.limit, par2.upper.limit), confidence.level=confidence.level)
 
   # mean dispersal distance
   mean.generalnormal <- dist.opt$par[1] * (gamma(3/dist.opt$par[2])/gamma(2/dist.opt$par[2]))

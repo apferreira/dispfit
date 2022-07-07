@@ -5,6 +5,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     if(a < 0 || b < 0) return(Inf)
     
     fgamma <- (1 / (2 * pi * (a^2) * gamma(b))) * ((r/a)^(b-2)) * exp(-r/a)
+    fgamma[fgamma == 0] <- .Machine$double.xmin
     -sum(log(fgamma)) ## Negative Log Likelihood
   }
   dist.gamma <- function (r, a, b) {
@@ -18,7 +19,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
                            fn = log.dist.gamma, ## função a minimizar
                            r = data,
                            method = "L-BFGS-B",
-                           lower = c(0.00001, 0.00001)
+                           lower = c(1e-6, 1e-6)
   )
   # output values
   # AIC
@@ -56,7 +57,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     # 169 is near the maximum value that can be used in gamma(x) without returning Inf
     min(169, (2 * log(max(data) / pars[1]) + log(.Machine$double.xmax)) / log(max(data) / pars[1]))
   }
-  CI <- confint.dispfit(dist.opt, log.dist.gamma, data=data, lower=c(0, 0), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.opt, log.dist.gamma, data=data, lower=c(1e-6, 1e-6), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
   
   # mean dispersal distance
   mean.gamma <- dist.opt$par[1] * dist.opt$par[2]

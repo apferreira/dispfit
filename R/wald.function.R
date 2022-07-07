@@ -5,6 +5,8 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     if(a < 0 || b < 0) return(Inf)
     
     fwald <- (sqrt(b)/sqrt(8 * (pi^3) * (r^5))) * exp(-(b * ((r - a)^2))/(2 * (a^2) * r))
+    # we prevent Inf by replacing zeroes with the machine minimum
+    fwald[fwald == 0] <- .Machine$double.xmin
     -sum(log(fwald))
   }
   dist.wald <- function (r, a, b) {
@@ -52,7 +54,7 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   #   KS.wald <- "Accept"
   # } else {KS.wald <- "Reject"}
 
- CI <- confint.dispfit(dist.opt, log.dist.wald, data=data, lower=c(0, 0), upper=list(10000, 10000), confidence.level=confidence.level)  
+ CI <- confint.dispfit(dist.opt, log.dist.wald, data=data, lower=c(1e-6, 1e-6), upper=list(10000, 10000), confidence.level=confidence.level)  
  
   # mean dispersal distance
   mean.wald <- dist.opt$par[1]

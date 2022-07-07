@@ -1,4 +1,31 @@
+compute.par.limits <- function(lower.limits, upper.limits, pars, data, parameter) {
+	if(inherits(lower.limits, "list")) {
+		if(inherits(lower.limits[[parameter]], "function"))
+			par2.lower <- lower.limits[[parameter]](pars, data)
+		else
+			par2.lower <- lower.limits[[parameter]]
+	} else if(inherits(lower.limits, "numeric")) {
+		par2.lower <- lower.limits[parameter]
+	}
+
+	if(inherits(upper.limits, "list")) {
+		if(inherits(upper.limits[[parameter]], "function"))
+			par2.upper <- upper.limits[[parameter]](pars, data)
+		else
+			par2.upper <- upper.limits[[parameter]]
+	} else if(inherits(upper.limits, "numeric")) {
+		par2.upper <- upper.limits[parameter]
+	}
+	return(c(par2.lower, par2.upper))
+}
+
 confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), upper.limits=c(100000, 100000), confidence.level) {
+	# get the name of the distribution from the name of the calling function
+	distribution.name <- as.character((sys.calls()[[sys.nframe()-1]])[[1]])
+	distribution.name <- regmatches(distribution.name, regexec("(?<fun>.*)\\.function",
+		distribution.name, perl=TRUE))[[1]]["fun"]
+	
+	debug <- FALSE
 	twopars <- length(init.pars$par) > 1
 	
 	par1 <- init.pars$par[1]
@@ -9,7 +36,7 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 		par2 <- init.pars$par[2]
 		par.2.se <- sqrt(diag(solve(numDeriv::hessian(logdistfun, x=init.pars$par, r=data))))[2]
 	}
-	
+		
 	# parameter estimate confidence intervals
 	log.dist.ci <- function (a, b=NA, r) {
 		return(logdistfun(par=c(a, b), r))
@@ -17,129 +44,207 @@ confint.dispfit <- function(init.pars, logdistfun, data, lower.limits=c(0, 0), u
 	n.se <- 30
 	len <- 1000
 
-	# Par 1 CI
-	par.1.ini <- par1 - n.se * par.1.se
-	if (par.1.ini <= lower.limits[1]) {
-		par.1.ini <- lower.limits[1] + 0.01
-	}
-	par.1.fin <- par1 + n.se * par.1.se
-	par.1.est <- seq(par.1.ini, par.1.fin, length.out = len)
-
-	par.1.prof <- numeric(len)
-	if(twopars) {
-		for (i in 1:len) {
-			if(inherits(lower.limits, "list")) {
-				if(inherits(lower.limits[[2]], "function"))
-					par2.lower <- lower.limits[[2]](c(par.1.est[i], NA), data)
-				else
-					par2.lower <- lower.limits[[2]] + 0.00001
-			} else if(inherits(lower.limits, "numeric")) {
-				par2.lower <- lower.limits[2] + 0.00001
-			}
-
-			if(inherits(upper.limits, "list")) {
-				if(inherits(upper.limits[[2]], "function"))
-					par2.upper <- upper.limits[[2]](c(par.1.est[i], NA), data)
-				else
-					par2.upper <- upper.limits[[2]]
-			} else if(inherits(upper.limits, "numeric")) {
-				par2.upper <- upper.limits[2]
-			}
-
-			if(par2.upper > par2.lower && is.finite(log.dist.ci(par.1.est[i], par2, data))) {
-#				tryCatch({
-				par.1.prof[i] <- optim(log.dist.ci, par = par2, a = par.1.est[i], r = data, lower=par2.lower, upper=par2.upper, method = "Brent")$value
-#				}, warning=function(w) browser())
-			}
-		}
-	} else {
-		for (i in 1:len) {
-		    par.1.prof[i] = log.dist.ci(a = par.1.est[i], r = data)
-	    }
-	}
-
-	if (length(which(par.1.prof == 0) > 0)) {
-		par.1.prof <- par.1.prof[-which(par.1.prof == 0)]
-	}
-
-	# in extreme cases, it is not possible to compute CI, so, prevent that
-	if(which.min(par.1.prof) == 1) {
+	if(par1 > 100000) {
 		par.1.CIlow <- NA
+		par.1.CIupp <- NA
+		warning(distribution.name, ": Parameter 'a' likely diverged, skipping CI calculation")
 	} else {
-		prof.lower <- par.1.prof[1:which.min(par.1.prof)]
-		prof.par.1.lower <- par.1.est[1:which.min(par.1.prof)]
-		par.1.CIlow <- approx(prof.lower, prof.par.1.lower, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
-	}
+		############ Par 1
+		par.1.ini <- par1 - n.se * par.1.se
+		par.1.fin <- par1 + n.se * par.1.se
+		step <- (par.1.fin - par.1.ini) / len
+		threshold <- init.pars$value + qchisq(confidence.level, 1) / 2
+		max.trials <- 10000
 
-	if(which.min(par.1.prof) == length(par.1.prof) || which.min(par.1.prof) == 1) {
-		par.1.CIupp <- Inf
-	} else {
-		prof.upper <- par.1.prof[which.min(par.1.prof):length(par.1.prof)]
-		prof.par.1.upper <- par.1.est[which.min(par.1.prof):length(par.1.prof)]
-		par.1.CIupp <- approx(prof.upper, prof.par.1.upper, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
-	}
-	
+		# Par 1 CI LOWER
+		par1.test <- par1
+		if(debug) par.1.prof <- matrix(ncol=2, nrow=0)
+		count <- 0
+		last.value <- NA
+		last.par <- NA
 
-	if(twopars) {
-		# Par 2 CI
+		repeat {
+			if(twopars) {
+				limits <- compute.par.limits(lower.limits, upper.limits, c(par1.test, NA), data, parameter=2)
+				if(limits[2] > limits[1] && is.finite(log.dist.ci(par1.test, par2, data))) {
+		#				tryCatch({
+					prev.value <- last.value
+					last.value <- optim(log.dist.ci, par = par2, a = par1.test, r = data, lower=limits[1], upper=limits[2], method = "Brent")$value
+					if(debug) par.1.prof <- rbind(par.1.prof, c(par1.test, last.value))
+		#				}, warning=function(w) browser())
+				}
+			} else {
+				prev.value <- last.value
+				last.value <- log.dist.ci(a = par1.test, r = data)
+				if(debug) par.1.prof <- rbind(par.1.prof, c(par1.test, last.value))
+			}
+			prev.par <- last.par
+			last.par <- par1.test
+			par1.test <- par1.test - step
+
+			if(par1.test <= lower.limits[1]) {	# ups, we crossed the lower limit
+				par1.test <- par1.test + step	# undo step
+				repeat {
+					step <- step / 10	# increase resolution
+					if(debug) message("Reduced step")
+					if(par1.test - step > lower.limits[1]) break
+				}
+				par1.test <- par1.test - step
+			}
+
+			count <- count + 1
+			if(last.value > threshold || count > max.trials || step < 1.e-12) break
+		}
+		if(debug) {
+			par(mfrow=c(2, 2))
+			plot(par.1.prof, pch=19, cex=0.7)
+			abline(v=approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y, h=threshold, lwd=2)
+		}
+
+		if(count > max.trials || step < 1.e-12) {
+			par.1.CIlow <- lower.limits[1]
+			warning(distribution.name, ": Lower CI for 'a' is not accurate, I've given up after ", max.trials, " trials.")
+		} else
+			par.1.CIlow <- approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y
+
+		# Par 1 CI UPPER
+		step <- (par.1.fin - par.1.ini) / len
+		par1.test <- par1
+		if(debug) par.1.prof <- matrix(ncol=2, nrow=0)
+		count <- 0
+		last.value <- NA
+		last.par <- NA
+
+		repeat {
+			if(twopars) {
+				limits <- compute.par.limits(lower.limits, upper.limits, c(par1.test, NA), data, parameter=2)
+
+				if(limits[2] > limits[1] && is.finite(log.dist.ci(par1.test, par2, data))) {
+		#				tryCatch({
+					prev.value <- last.value
+					last.value <- optim(log.dist.ci, par = par2, a = par1.test, r = data, lower=limits[1], upper=limits[2], method = "Brent")$value
+					if(debug) par.1.prof <- rbind(par.1.prof, c(par1.test, last.value))
+		#				}, warning=function(w) browser())
+				}
+			} else {
+				prev.value <- last.value
+				last.value <- log.dist.ci(a = par1.test, r = data)
+				if(debug) par.1.prof <- rbind(par.1.prof, c(par1.test, last.value))
+			}
+			prev.par <- last.par
+			last.par <- par1.test
+			par1.test <- par1.test + step
+			count <- count + 1
+			if(last.value > threshold || count > max.trials) break;
+		}
+
+		if(debug) {
+			plot(par.1.prof, pch=19, cex=0.7)
+			abline(v=approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y, h=threshold, lwd=2)
+		}
+		if(count > max.trials) {
+			par.1.CIupp <- Inf
+			warning(distribution.name, ": Upper CI for 'a' is not accurate, I've given up after ", max.trials, " trials.")
+		} else
+			par.1.CIupp <- approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y
+	} # Par1 <= 100000
+
+
+	if(twopars && par2 <= 100000) {
+		############ Par 1
 		par.2.ini <- par2 - n.se * par.2.se
-		if (par.2.ini <= lower.limits[2]) {
-			par.2.ini <- lower.limits[2] + 0.01
-		}
 		par.2.fin <- par2 + n.se * par.2.se
-		par.2.est <- seq(par.2.ini , par.2.fin, length.out = len)
+		step <- (par.2.fin - par.2.ini) / len
+		threshold <- init.pars$value + qchisq(confidence.level, 1) / 2
+		max.trials <- 10000
 
-		par.2.prof <- numeric(len)
-		for (i in 1:len) {
-			par1.lower <- lower.limits[1] + 0.00001
-			
-			if(inherits(lower.limits, "list")) {
-				if(inherits(lower.limits[[1]], "function"))
-					par1.lower <- lower.limits[[1]](c(NA, par.2.est[i]), data)
-				else
-					par1.lower <- lower.limits[[1]]
-			} else if(inherits(lower.limits, "numeric")) {
-				par1.lower <- lower.limits[1]
+		# Par 2 CI LOWER
+		par2.test <- par2
+		if(debug) par.2.prof <- matrix(ncol=2, nrow=0)
+		count <- 0
+		last.value <- NA
+		last.par <- NA
+
+		repeat {
+			limits <- compute.par.limits(lower.limits, upper.limits, c(NA, par2.test), data, parameter=1)
+
+			if(limits[2] > limits[1] && is.finite(log.dist.ci(par1, par2.test, data))) {
+	#				tryCatch({
+				prev.value <- last.value
+				last.value <- optim(log.dist.ci, par = par1, b = par2.test, r = data, lower=limits[1], upper=limits[2], method = "Brent")$value
+				if(debug) par.2.prof <- rbind(par.2.prof, c(par2.test, last.value))
+	#				}, warning=function(w) browser())
+			}
+			prev.par <- last.par
+			last.par <- par2.test
+			par2.test <- par2.test - step
+
+			if(par2.test <= lower.limits[2]) {	# ups, we crossed the lower limit
+				par2.test <- par2.test + step	# undo step
+				repeat {
+					step <- step / 10	# increase resolution
+					if(debug) message("Reduced step")
+					if(par2.test - step > lower.limits[2]) break
+				}
+				par2.test <- par2.test - step
 			}
 
-			if(inherits(upper.limits, "list")) {
-				if(inherits(upper.limits[[1]], "function"))
-					par1.upper <- upper.limits[[1]](c(NA, par.2.est[i]), data)
-				else
-					par1.upper <- upper.limits[[1]]
-			} else if(inherits(upper.limits, "numeric")) {
-				par1.upper <- upper.limits[1]
+			count <- count + 1
+			if(last.value > threshold || count > max.trials || step < 1.e-12) break
+		}
+		if(debug) {
+			plot(par.2.prof, pch=19, cex=0.7)
+			abline(v=approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y, h=threshold, lwd=2)
+		}
+
+		if(count > max.trials || step < 1.e-12) {
+			par.2.CIlow <- lower.limits[2]
+			warning(distribution.name, ": Lower CI for 'b' is not accurate, I've given up after ", max.trials, " trials.")
+		} else
+			par.2.CIlow <- approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y
+
+		# Par 2 CI UPPER
+		step <- (par.2.fin - par.2.ini) / len
+		par2.test <- par2
+		if(debug) par.2.prof <- matrix(ncol=2, nrow=0)
+		count <- 0
+		last.value <- NA
+		last.par <- NA
+
+		repeat {
+			limits <- compute.par.limits(lower.limits, upper.limits, c(NA, par2.test), data, parameter=1)
+
+			if(limits[2] > limits[1] && is.finite(log.dist.ci(par1, par2.test, data))) {
+	#				tryCatch({
+				prev.value <- last.value
+				last.value <- optim(log.dist.ci, par = par1, b = par2.test, r = data, lower=limits[1], upper=limits[2], method = "Brent")$value
+				if(debug) par.2.prof <- rbind(par.2.prof, c(par2.test, last.value))
+	#				}, warning=function(w) browser())
 			}
-
-			if(par1.upper > par1.lower && is.finite(log.dist.ci(par1, par.2.est[i], data))) {
-				par.2.prof[i] <- optim(log.dist.ci, par = par1, b = par.2.est[i], r = data, lower=par1.lower, upper=par1.upper, method = "Brent")$value
-			}
+			prev.par <- last.par
+			last.par <- par2.test
+			par2.test <- par2.test + step
+			count <- count + 1
+			if(last.value > threshold || count > max.trials) break;
 		}
 
-		if (length(which(par.2.prof == 0) > 0)) {
-			par.2.prof <- par.2.prof[-which(par.2.prof == 0)]
+		if(debug) {
+			plot(par.2.prof, pch=19, cex=0.7)
+			abline(v=approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y, h=threshold, lwd=2)
+#			readline("ENTER to go on.")
 		}
 
-
-		# in extreme cases, it is not possible to compute CI, so, prevent that
-		if(which.min(par.2.prof) == 1) {
-			par.2.CIlow <- NA
-		} else {
-			prof.lower <- par.2.prof[1:which.min(par.2.prof)]
-			prof.par.2.lower <- par.2.est[1:which.min(par.2.prof)]
-			par.2.CIlow <- approx(prof.lower, prof.par.2.lower, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
-		}
-
-		if(which.min(par.2.prof) == length(par.2.prof) || which.min(par.2.prof) == 1) {
+		if(count > max.trials) {
 			par.2.CIupp <- Inf
-		} else {
-			prof.upper <- par.2.prof[which.min(par.2.prof):length(par.2.prof)]
-			prof.par.2.upper <- par.2.est[which.min(par.2.prof):length(par.2.prof)]
-			par.2.CIupp <- approx(prof.upper, prof.par.2.upper, xout = init.pars$value + qchisq(confidence.level, 1)/2)$y
-		}
+			warning(distribution.name, ": Upper CI for 'b' is not accurate, I've given up after ", max.trials, " trials.")
+		} else
+			par.2.CIupp <- approx(c(prev.value, last.value), c(prev.par, last.par), xout = threshold)$y
 	} else {
-	  par.2.CIlow <- NA
-	  par.2.CIupp <- NA
+		if(twopars && par2 > 100000)
+			warning(distribution.name, ": Parameter 'b' likely diverged, skipping CI calculation")
+
+		par.2.CIlow <- NA
+		par.2.CIupp <- NA
 	}
 
 	return(c(

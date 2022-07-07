@@ -16,7 +16,7 @@ exponential.function <- function (data, chi.res.hist, ks.res.hist, confidence.le
                                  fn = log.dist.exponential,
                                  r = data,
                                  method = "Brent",
-                                 lower = 0.000001,
+                                 lower = 1e-6,
                                  upper = 100000)
   # output values
   # AIC
@@ -50,7 +50,7 @@ exponential.function <- function (data, chi.res.hist, ks.res.hist, confidence.le
   #   KS.exponential <- "Accept"
   # } else {KS.exponential <- "Reject"}
   
-  CI <- confint.dispfit(dist.opt, log.dist.exponential, data=data, lower=c(0), upper=list(100000), confidence.level=confidence.level)
+  CI <- confint.dispfit(dist.opt, log.dist.exponential, data=data, lower=c(1e-6), upper=list(100000), confidence.level=confidence.level)
   
   # mean dispersal distance
   mean.exponential <- dist.opt$par
