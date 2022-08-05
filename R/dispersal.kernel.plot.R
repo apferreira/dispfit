@@ -61,7 +61,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
     if ("Rayleigh" %in% best.fit) {
       pred.basic$melt$upr[pred.basic$melt$variable == "Rayleigh"] <- pred$rayleigh$upr
       pred.basic$melt$lwr[pred.basic$melt$variable == "Rayleigh"] <- pred$rayleigh$lwr
-    }
+      }
     if ("Exponential" %in% best.fit) {
       pred.basic$melt$upr[pred.basic$melt$variable == "Exponential"] <- pred$exponential$upr
       pred.basic$melt$lwr[pred.basic$melt$variable == "Exponential"] <- pred$exponential$lwr
@@ -73,11 +73,11 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
     if ("2Dt" %in% best.fit) {
       pred.basic$melt$upr[pred.basic$melt$variable == "2Dt"] <- pred$twodt$upr
       pred.basic$melt$lwr[pred.basic$melt$variable == "2Dt"] <- pred$twodt$lwr
-    }
+      }
     if ("Geometric" %in% best.fit) {
       pred.basic$melt$upr[pred.basic$melt$variable == "Geometric"] <- pred$geometric$upr
       pred.basic$melt$lwr[pred.basic$melt$variable == "Geometric"] <- pred$geometric$lwr
-    }
+      }
     if ("Logistic" %in% best.fit) {
       pred.basic$melt$upr[pred.basic$melt$variable == "Logistic"] <- pred$logistic$upr
       pred.basic$melt$lwr[pred.basic$melt$variable == "Logistic"] <- pred$logistic$lwr
@@ -106,11 +106,11 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
     ggplot2::ggplot() +
       ggplot2::theme_light() +
       ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y = value, colour = variable), lineend = "round") +
-      ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y=upr, col = variable), linetype = "dotted", show.legend = F) +
-      ggplot2::geom_line(data = pred.basic$melt, ggplot2::aes(x = distance, y=lwr, col = variable), linetype = "dotted", show.legend = F) +
-      ggplot2::geom_ribbon(data = pred.basic$melt, ggplot2::aes(x = distance, ymax = upr, ymin = lwr, fill = variable), alpha=0.15, show.legend = F) +
+      ggplot2::geom_line(data = na.omit(pred.basic$melt), ggplot2::aes(x = distance, y=upr, col = variable), linetype = "dotted", show.legend = F) +
+      ggplot2::geom_line(data = na.omit(pred.basic$melt), ggplot2::aes(x = distance, y=lwr, col = variable), linetype = "dotted", show.legend = F) +
+      ggplot2::geom_ribbon(data = na.omit(pred.basic$melt), ggplot2::aes(x = distance, ymax = upr, ymin = lwr, fill = variable), alpha=0.15, show.legend = F) +
       { if(plot.data) ggplot2::stat_density(data = data.frame(x=data$data), ggplot2::aes(x=x), colour = "black", geom = "line", size = 1) } +
-      ggplot2::ylim(0, (1.2*max(pred.basic$melt$upr, na.rm=T))) +
+      #ggplot2::ylim(0, (1.2*max(pred.basic$melt$upr, na.rm=T))) +
       ggplot2::coord_cartesian(ylim=c(0, max(hist(data$data, breaks = length(data$data), plot = F)$density))) +
       ggplot2::labs(x = "Distance", y = "Density", colour = "Distribution")
   }

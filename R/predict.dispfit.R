@@ -56,6 +56,8 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$rayleigh <- data.frame(distance = x, rayleigh = dist.rayleigh(x, data$values["Rayleigh","Parameter 1"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Rayleigh","Parameter 1 lower CI"]) && !is.na(data$values["Rayleigh","Parameter 1 upper CI"]) &&
+         !data$values["Rayleigh","Parameter 1 upper CI"] == Inf) {
       seq.rayleigh <- seq(data$values["Rayleigh","Parameter 1 lower CI"], data$values["Rayleigh","Parameter 1 upper CI"], length.out = n)
       df.seq.rayleigh <- data.frame(1:n)
       for (i in 1:n) {
@@ -63,6 +65,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       }
       pred.disp$rayleigh$lwr <- apply(df.seq.rayleigh, 1, FUN = min)
       pred.disp$rayleigh$upr <- apply(df.seq.rayleigh, 1, FUN = max)
+      }
+      else {
+          warning("Parameter CI for Rayleigh are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$rayleigh$lwr <- NA
+      pred.disp$rayleigh$upr <- NA
+        }
     }
   }
   if ("Exponential" %in% best.fit) {
@@ -72,6 +80,8 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$exponential <- data.frame(distance = x, exponential = dist.exponential(x, data$values["Exponential","Parameter 1"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Exponential","Parameter 1 lower CI"]) && !is.na(data$values["Exponential","Parameter 1 upper CI"]) &&
+         !data$values["Exponential","Parameter 1 upper CI"] == Inf) {
       seq.exponential <- seq(data$values["Exponential","Parameter 1 lower CI"], data$values["Exponential","Parameter 1 upper CI"], length.out = n)
       df.seq.exponential <- data.frame(1:n)
       for (i in 1:n) {
@@ -79,6 +89,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       }
       pred.disp$exponential$lwr <- apply(df.seq.exponential, 1, FUN = min)
       pred.disp$exponential$upr <- apply(df.seq.exponential, 1, FUN = max)
+      }
+      else {
+        warning("Parameter CI for Exponential are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$exponential$lwr <- NA
+      pred.disp$exponential$upr <- NA
+      }
     }
   }
   if ("Generalized Normal" %in% best.fit) {
@@ -88,6 +104,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$generalnormal <- data.frame(distance = x, generalnormal = dist.generalnormal(x, data$values["Generalized Normal","Parameter 1"], data$values["Generalized Normal","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Generalized Normal","Parameter 1 lower CI"]) && !is.na(data$values["Generalized Normal","Parameter 1 upper CI"]) &&
+         !data$values["Generalized Normal","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["Generalized Normal","Parameter 2 lower CI"]) && !is.na(data$values["Generalized Normal","Parameter 2 upper CI"]) &&
+         !data$values["Generalized Normal","Parameter 2 upper CI"] == Inf) {
       seq.generalnormal.par.1 <- seq(data$values["Generalized Normal","Parameter 1 lower CI"], data$values["Generalized Normal","Parameter 1 upper CI"], length.out = n)
       seq.generalnormal.par.2 <- seq(data$values["Generalized Normal","Parameter 2 lower CI"], data$values["Generalized Normal","Parameter 2 upper CI"], length.out = n)
       df.seq.generalnormal <- data.frame(1:n)
@@ -102,8 +122,15 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
       }
       df.seq.generalnormal <- data.frame()
       df.seq.generalnormal <- do.call(cbind, list.seq.generalnormal)
+
       pred.disp$generalnormal$lwr <- apply(df.seq.generalnormal, 1, FUN = min)
       pred.disp$generalnormal$upr <- apply(df.seq.generalnormal, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for Generalized Normal are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$generalnormal$lwr <- NA
+      pred.disp$generalnormal$upr <- NA
+      }
     }
     }
   if ("2Dt" %in% best.fit) {
@@ -113,6 +140,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$twodt <- data.frame(distance = x, twodt = dist.2dt(x, data$values["2Dt","Parameter 1"], data$values["2Dt","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["2Dt","Parameter 1 lower CI"]) && !is.na(data$values["2Dt","Parameter 1 upper CI"]) &&
+         !data$values["2Dt","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["2Dt","Parameter 2 lower CI"]) && !is.na(data$values["2Dt","Parameter 2 upper CI"]) &&
+         !data$values["2Dt","Parameter 2 upper CI"] == Inf) {
       seq.2dt.par.1 <- seq(data$values["2Dt","Parameter 1 lower CI"], data$values["2Dt","Parameter 1 upper CI"], length.out = n)
       seq.2dt.par.2 <- seq(data$values["2Dt","Parameter 2 lower CI"], data$values["2Dt","Parameter 2 upper CI"], length.out = n)
 
@@ -129,6 +160,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
 
       pred.disp$twodt$lwr <- apply(df.seq.2dt, 1, FUN = min)
       pred.disp$twodt$upr <- apply(df.seq.2dt, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for 2Dt are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$twodt$lwr <- NA
+      pred.disp$twodt$upr <- NA
+      }
     }
   }
   if ("Geometric" %in% best.fit) {
@@ -138,6 +175,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$geometric <- data.frame(distance = x, geometric = dist.geometric(x, data$values["Geometric","Parameter 1"], data$values["Geometric","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Geometric","Parameter 1 lower CI"]) && !is.na(data$values["Geometric","Parameter 1 upper CI"]) &&
+         !data$values["Geometric","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["Geometric","Parameter 2 lower CI"]) && !is.na(data$values["Geometric","Parameter 2 upper CI"]) &&
+         !data$values["Geometric","Parameter 2 upper CI"] == Inf) {
       seq.geometric.par.1 <- seq(data$values["Geometric","Parameter 1 lower CI"], data$values["Geometric","Parameter 1 upper CI"], length.out = n)
       seq.geometric.par.2 <- seq(data$values["Geometric","Parameter 2 lower CI"], data$values["Geometric","Parameter 2 upper CI"], length.out = n)
 
@@ -154,6 +195,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
 
       pred.disp$geometric$lwr <- apply(df.seq.geometric, 1, FUN = min)
       pred.disp$geometric$upr <- apply(df.seq.geometric, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for Geometric are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$geometric$lwr <- NA
+      pred.disp$geometric$upr <- NA
+      }
     }
   }
   if ("Log-Normal" %in% best.fit) {
@@ -163,6 +210,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$lognormal <- data.frame(distance = x, lognormal = dist.lognormal(x, data$values["Log-Normal","Parameter 1"], data$values["Log-Normal","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Log-Normal","Parameter 1 lower CI"]) && !is.na(data$values["Log-Normal","Parameter 1 upper CI"]) &&
+         !data$values["Log-Normal","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["Log-Normal","Parameter 2 lower CI"]) && !is.na(data$values["Log-Normal","Parameter 2 upper CI"]) &&
+         !data$values["Log-Normal","Parameter 2 upper CI"] == Inf) {
       seq.lognormal.par.1 <- seq(data$values["Log-Normal","Parameter 1 lower CI"], data$values["Log-Normal","Parameter 1 upper CI"], length.out = n)
       seq.lognormal.par.2 <- seq(data$values["Log-Normal","Parameter 2 lower CI"], data$values["Log-Normal","Parameter 2 upper CI"], length.out = n)
       list.seq.lognorma <- list()
@@ -178,6 +229,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
 
       pred.disp$lognormal$lwr <- apply(df.seq.lognormal, 1, FUN = min)
       pred.disp$lognormal$upr <- apply(df.seq.lognormal, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for Log-Normal are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$lognormal$lwr <- NA
+      pred.disp$lognormal$upr <- NA
+      }
     }
   }
   if ("Wald" %in% best.fit) {
@@ -187,6 +244,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$wald <- data.frame(distance = x, wald = dist.wald(x, data$values["Wald","Parameter 1"], data$values["Wald","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Wald","Parameter 1 lower CI"]) && !is.na(data$values["Wald","Parameter 1 upper CI"]) &&
+         !data$values["Wald","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["Wald","Parameter 2 lower CI"]) && !is.na(data$values["Wald","Parameter 2 upper CI"]) &&
+         !data$values["Wald","Parameter 2 upper CI"] == Inf) {
       seq.wald.par.1 <- seq(data$values["Wald","Parameter 1 lower CI"], data$values["Wald","Parameter 1 upper CI"], length.out = n)
       seq.wald.par.2 <- seq(data$values["Wald","Parameter 2 lower CI"], data$values["Wald","Parameter 2 upper CI"], length.out = n)
       list.seq.wald <- list()
@@ -202,6 +263,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
 
       pred.disp$wald$lwr <- apply(df.seq.wald, 1, FUN = min)
       pred.disp$wald$upr <- apply(df.seq.wald, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for Wald are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$wald$lwr <- NA
+      pred.disp$wald$upr <- NA
+      }
     }
   }
   if ("Weibull" %in% best.fit) {
@@ -211,6 +278,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$weibull <- data.frame(distance = x, weibull = dist.weibull(x, data$values["Weibull","Parameter 1"], data$values["Weibull","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Weibull","Parameter 1 lower CI"]) && !is.na(data$values["Weibull","Parameter 1 upper CI"]) &&
+         !data$values["Weibull","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["Weibull","Parameter 2 lower CI"]) && !is.na(data$values["Weibull","Parameter 2 upper CI"]) &&
+         !data$values["Weibull","Parameter 2 upper CI"] == Inf) {
       seq.weibull.par.1 <- seq(data$values["Weibull","Parameter 1 lower CI"], data$values["Weibull","Parameter 1 upper CI"], length.out = n)
       seq.weibull.par.2 <- seq(data$values["Weibull","Parameter 2 lower CI"], data$values["Weibull","Parameter 2 upper CI"], length.out = n)
       list.seq.weibull <- list()
@@ -226,6 +297,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
 
       pred.disp$weibull$lwr <- apply(df.seq.weibull, 1, FUN = min)
       pred.disp$weibull$upr <- apply(df.seq.weibull, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for Weibull are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$weibull$lwr <- NA
+      pred.disp$weibull$upr <- NA
+      }
     }
   }
   if ("Gamma" %in% best.fit) {
@@ -235,6 +312,10 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
     }
     pred.disp$gamma <- data.frame(distance = x, gamma = dist.gamma(x, data$values["Gamma","Parameter 1"], data$values["Gamma","Parameter 2"]))
     if (isTRUE(envelopes)) {
+      if(!is.na(data$values["Gamma","Parameter 1 lower CI"]) && !is.na(data$values["Gamma","Parameter 1 upper CI"]) &&
+         !data$values["Gamma","Parameter 1 upper CI"] == Inf &&
+         !is.na(data$values["Gamma","Parameter 2 lower CI"]) && !is.na(data$values["Gamma","Parameter 2 upper CI"]) &&
+         !data$values["Gamma","Parameter 2 upper CI"] == Inf) {
       seq.gamma.par.1 <- seq(data$values["Gamma","Parameter 1 lower CI"], data$values["Gamma","Parameter 1 upper CI"], length.out = n)
       seq.gamma.par.2 <- seq(data$values["Gamma","Parameter 2 lower CI"], data$values["Gamma","Parameter 2 upper CI"], length.out = n)
       list.seq.gamma <- list()
@@ -250,6 +331,12 @@ predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
 
       pred.disp$gamma$lwr <- apply(df.seq.gamma, 1, FUN = min)
       pred.disp$gamma$upr <- apply(df.seq.gamma, 1, FUN = max)
+      }
+      else {
+        warning("Parameter(s) CI for Gamma are NA or infinite. Unable to estimate confidence envelopes.")
+      pred.disp$gamma$lwr <- NA
+      pred.disp$gamma$upr <- NA
+      }
     }
   }
     pred.disp
