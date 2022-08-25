@@ -7,7 +7,7 @@
 #'
 #'@details
 #' The dispfit package fits 9 well-known distributions for estimating dispersal kernels
-#' (Clark et al., 1999; Nathan et al., 2012) (Table 1).
+#' (Clark et al., 1999; Nathan et al., 2012).
 #' The simplest functions considered are the single‐parameter Rayleigh and Exponential,
 #' which are particularly popular in mathematical developments of theory concerning spatial dynamics
 #' (O'Dwyer & Green 2010; Gilbert et al. 2014; Harsch et al. 2014).
