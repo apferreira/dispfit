@@ -12,17 +12,14 @@ It also estimates the parameter(s) value(s) and SE of each distribution,
 as well as its Mean, Variance, Skewness, and Kurtosis.
 }
 \details{
-The dispfit package fits 11 well-known distributions for estimating dispersal kernels
+The dispfit package fits 9 well-known distributions for estimating dispersal kernels
 (Clark et al., 1999; Nathan et al., 2012) (Table 1).
 The simplest functions considered are the single‐parameter Rayleigh and Exponential,
 which are particularly popular in mathematical developments of theory concerning spatial dynamics
 (O'Dwyer & Green 2010; Gilbert et al. 2014; Harsch et al. 2014).
-The remaining 9 functions are two-parameter distributions which are often referred to better
+The remaining 7 functions are two-parameter distributions which are often referred to better
 represent real dispersal kernels than Rayleigh and Exponential functions
 (Bullock and Clarke, 2000; Clark et al., 1999).
-Apart from these 11 distributions, dispfit also includes three univariate functions
-derived from the so-called generalized extreme value distribution (GEV),
-and commonly used in extreme value statistics (REFs).
 }
 \section{Package functions}{
 
@@ -46,6 +43,3 @@ for instance Nathan et al. (2012) distinguish between “dispersal distance kern
 and “dispersal location kernel, KL”.
 }
 
-\author{
-António Proença-Ferreira, \email{antoniomiguelpferreira@gmail.com}
-}
