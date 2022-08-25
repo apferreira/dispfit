@@ -9,6 +9,8 @@
 #' but they may be selected manually by name. See Details.
 #' @param order.by A character string giving the estimator by which the distributions are to be ordered in the output table.
 #'  The default is “AICc”, but one can also choose “AIC” or “BIC”.
+#'
+#' @param confidence.level A numeric value varying from 0 to 1, defining the confidence interval to be used when calculating confidence envelopes.
 #' @details This function fits one or more dispersal kernels with 1-2 parameters, by estimating the
 #' distribution of kernel parameters (θ∈R) maximizing the likelihood function.
 #' @return Returns a list with all maximum likelihood calculations for each selected distribution.
@@ -23,11 +25,12 @@
 #' @import msm numDeriv stats
 #' @export
 #' @examples
-#' ## simulate data from exponential distribution
-#' sim <- rexp(100, rate = 0.01)
+#' ## simulate data from lognormal distribution
+#' set.seed(1111)
+#' simulated.data <- rlnorm(200, meanlog = 5, sdlog = 1)
 #'
 #' ## run dispersal.kernel function
-#' fit <- dispersal.kernel(sim)
+#' fit <- dispersal.kernel(simulated.data)
 #'
 #' ## display table
 #' fit$distribution.selection

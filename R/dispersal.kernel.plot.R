@@ -12,12 +12,15 @@
 #' @import ggplot2 reshape2 graphics
 #' @export
 #' @examples
+#' ## simulate data from lognormal distribution
+#' set.seed(1111)
+#' simulated.data <- rlnorm(200, meanlog = 5, sdlog = 1)
 #'
-#' sim <- rexp(100, rate = 0.01)
+#' ## run dispersal.kernel function
+#' fit <- dispersal.kernel(simulated.data)
 #'
-#' test <- dispersal.kernel(sim)
-#'
-#' plot(test)
+#' ## plot data from fit
+#' plot(fit)
 
 plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE, plot.data = TRUE) {
 
@@ -111,7 +114,7 @@ plot.dispfit <- function (data, fit.criteria = NULL, criteria.dif = 2, envelopes
       ggplot2::geom_ribbon(data = na.omit(pred.basic$melt), ggplot2::aes(x = distance, ymax = upr, ymin = lwr, fill = variable), alpha=0.15, show.legend = F) +
       { if(plot.data) ggplot2::stat_density(data = data.frame(x=data$data), ggplot2::aes(x=x), colour = "black", geom = "line", size = 1) } +
       #ggplot2::ylim(0, (1.2*max(pred.basic$melt$upr, na.rm=T))) +
-      ggplot2::coord_cartesian(ylim=c(0, max(hist(data$data, breaks = length(data$data), plot = F)$density))) +
+      #ggplot2::coord_cartesian(ylim=c(0, max(hist(data$data, breaks = length(data$data), plot = F)$density))) +
       ggplot2::labs(x = "Distance", y = "Density", colour = "Distribution")
   }
   else {

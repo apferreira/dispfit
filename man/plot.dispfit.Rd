@@ -27,12 +27,15 @@
 Plots the distributions previously fitted by \code{\link{dispersal.kernel}} against the data density plot.
 }
 \examples{
+## simulate data from lognormal distribution
+set.seed(1111)
+simulated.data <- rlnorm(200, meanlog = 5, sdlog = 1)
 
-sim <- rexp(100, rate = 0.01)
+## run dispersal.kernel function
+fit <- dispersal.kernel(simulated.data)
 
-test <- dispersal.kernel(sim)
-
-plot(test)
+## plot data from fit
+plot(fit)
 }
 \seealso{
 \code{\link{dispersal.kernel}}

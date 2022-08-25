@@ -6,28 +6,30 @@
 #' @param fit.criteria Either a numeric value referring to the number of distributions to plot (ordered according to the order.by argument from dispersal.kernel); a character string choosing to plot “all” distributions, to plot the distributions with an “AIC”, “AICc”, or “BIC” difference to the top distribution bellow the number set by criteria.dif, or to plot specific distributions. By default, only the top distribution is plotted.
 #' @param criteria.dif A numeric value used when “AIC”, “AICc”, or "BIC" are also selected in fit.criteria. Its value refers to the estimator difference to the top distribution. Only distributions with their estimator difference to the top model falling below this value will be plotted. The default is 2.
 #' @param envelopes A boolean (TRUE/FALSE) value choosing whether to calculate the confidence envelopes associated with each distribution. Default is TRUE.
-#' @param level A numeric value varying from 0 to 1, defining the confidence interval to be used when calculating confidence envelopes.
 #' @seealso \code{\link{dispersal.kernel}}
 #' @keywords kernel predict
 #' @import ggplot2 reshape2 graphics
 #' @export
 #' @examples
+#' ## simulate data from lognormal distribution
+#' set.seed(1111)
+#' simulated.data <- rlnorm(200, meanlog = 5, sdlog = 1)
 #'
-#' sim <- rexp(100, rate = 0.01)
+#' ## run dispersal.kernel function
+#' fit <- dispersal.kernel(simulated.data)
 #'
-#' test <- dispersal.kernel(sim)
-#'
-#' predict(test)
+#' ## predict data based on fit
+#' predict(fit)
 
 predict.dispfit <- function(data, fit.criteria = NULL, criteria.dif = 2,
-                            envelopes = TRUE,
+                            envelopes = TRUE
                             # level = 0.95,
                             # se.fit = FALSE,
                             #  interval = c("none", "confidence", "prediction"),
                             #  type = c("response", "terms"),
                             #  terms = NULL, na.action = na.pass,
                             #  pred.var = res.var/weights, weights = 1,
-                            ...)
+                            )
 {
   if (is.null(fit.criteria)) {
     best.fit <- row.names(data$values[1,])

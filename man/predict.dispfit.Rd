@@ -4,14 +4,7 @@
 \alias{predict.dispfit}
 \title{Predicted data from dispersal kernel fit for dispersal data}
 \usage{
-\method{predict}{dispfit}(
-  data,
-  fit.criteria = NULL,
-  criteria.dif = 2,
-  envelopes = TRUE,
-  level = 0.95,
-  ...
-)
+\method{predict}{dispfit}(data, fit.criteria = NULL, criteria.dif = 2, envelopes = TRUE)
 }
 \arguments{
 \item{data}{Output object from the \code{\link{dispersal.kernel}} function.}
@@ -21,19 +14,20 @@
 \item{criteria.dif}{A numeric value used when “AIC”, “AICc”, or "BIC" are also selected in fit.criteria. Its value refers to the estimator difference to the top distribution. Only distributions with their estimator difference to the top model falling below this value will be plotted. The default is 2.}
 
 \item{envelopes}{A boolean (TRUE/FALSE) value choosing whether to calculate the confidence envelopes associated with each distribution. Default is TRUE.}
-
-\item{level}{A numeric value varying from 0 to 1, defining the confidence interval to be used when calculating confidence envelopes.}
 }
 \description{
 Plots the distributions previously fitted by \code{\link{dispersal.kernel}} against the data density plot.
 }
 \examples{
+## simulate data from lognormal distribution
+set.seed(1111)
+simulated.data <- rlnorm(200, meanlog = 5, sdlog = 1)
 
-sim <- rexp(100, rate = 0.01)
+## run dispersal.kernel function
+fit <- dispersal.kernel(simulated.data)
 
-test <- dispersal.kernel(sim)
-
-predict(test)
+## predict data based on fit
+predict(fit)
 }
 \seealso{
 \code{\link{dispersal.kernel}}
