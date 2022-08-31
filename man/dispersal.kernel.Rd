@@ -32,7 +32,7 @@ Furthermore, two summary tables may be accessed.
 }
 \description{
 Fits several pre-defined distributions to dispersal or movement data, computing several estimators: AIC, AICc, BIC,
-Chi-squared, and Kolgomorov-Smirnov. It also estimates the parameter(s) value(s) and SE of each distribution,
+Chi-squared, and Kolgomorov-Smirnov. It also estimates the parameter(s) value(s) and CI of each distribution,
 as well as its Mean, Variance, Skewness, and Kurtosis.
 }
 \details{

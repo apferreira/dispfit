@@ -1,4 +1,4 @@
-#' dispfit: A package to Fit Distributions to Dispersal Data
+#' dispfit: A package to estimate species dispersal kernels
 #'
 #' The dispfit package fits several pre-defined distributions to dispersal or movement data,
 #' computing several estimators: AIC, AICc, BIC, Chi-squared, and Kolgomorov-Smirnov.
@@ -33,20 +33,18 @@
 #' for instance Nathan et al. (2012) distinguish between “dispersal distance kernel, KD”,
 #' and “dispersal location kernel, KL”.
 #'
-#' @section Distributions
+#' @section Distributions:
 #'
 #' \describe{
-#' \item{Rayleigh}{\deqn{f(r) = (1/(\pi a^2)) exp(-(r/a)^2)}}
-#' \item{Exponential}{\deqn{f(r) = (1/(2\pi a r)) exp(-r/a)}}
-#' \item{Generalized Normal}{\deqn{f(r) = (b/(2\pi (a^2) \Gamma(2/b))) exp(-(r/a)^b)}}
-#' \item{Bivariate Student’s t (2\emph{Dt)}}{\deqn{f(r) =  ((b-1) / (\pi (a^2))) ((1 + (r^2)/(a^2))^(-b))}}
-#' \item{Geometric}{\deqn{f(r) = (((b - 2)(b - 1)) / (2\pi (a^2))) ((1 + (r / a)) ^ -b)}}
-#' item{Logistic}{\deqn{f(r) = (b / (2\pi (a^2) \Gamma(2/b) \Gamma(1-(2/b)) )) ((1 + ((r^b) / (a^b)))^(-1))}}
-#' \item{Lognormal}{\deqn{f(r) = (1 / (((2\pi) ^ (3/2)) (b (r ^ 2)))) exp(-(log(r / a)^2) / (2 * (b ^ 2)))}}
-#' \item{Wald}{\deqn{f(r) = (\sqrt(b)/\sqrt(8 (\pi^3) (r^5))) exp(-(b ((r - a)^2))/(2 (a^2) * r))}}
-#' \item{Weibull}{\deqn{f(r) = (b/(2\pi a^b)) (r^(b-2)) exp(-(r^b/a^b))}}
-#' \item{Gamma}{\deqn{f(r) = (1 / (2\pi (a^2) \Gamma(b))) ((r/a)^(b-2)) * exp(-r/a)}}
-#' \item{Log-sech}{\deqn{f(r) = (1 / ((\pi^2) b (r^2))) / (((r / a)^(1 / b)) + ((r / a) ^ -(1 / b)))}}
+#' \item{Rayleigh}{\deqn{f(r) = 1/(\pi a^2) * exp(-(r/a)^2)}}
+#' \item{Exponential}{\deqn{f(r) = 1/(2\pi a^2) * exp(-r/a)}}
+#' \item{Generalized Normal}{\deqn{f(r) = b/(2\pi (a^2) \Gamma(2/b)) * exp(-(r/a) ^ b)}}
+#' \item{Bivariate Student’s t (2\emph{Dt)}}{\deqn{f(r) =  (b-1) / (\pi (a^2)) * [1 + (r/a)^2) ^ -b]}}
+#' \item{Geometric}{\deqn{f(r) = (b - 2)(b - 1) / 2\pi (a^2) * (1 + r/a) ^ -b}}
+#' \item{Lognormal}{\deqn{f(r) = 1 / ((2\pi) ^ (3/2) b (r ^ 2)) * exp(- log(r / a)^2 / (2 b^2))}}
+#' \item{Wald}{\deqn{f(r) = \sqrt(b)/\sqrt(8 \pi^3 r^5) * exp(-(b (r - a)^2)/2 (a^2) r)}}
+#' \item{Weibull}{\deqn{f(r) = b/2\pi a^b * r^(b-2) * exp(-(r/a)^b)}}
+#' \item{Gamma}{\deqn{f(r) = 1 / 2\pi a^2 \Gamma(b) * (r/a)^(b-2) * exp(-r/a)}}
 #' }
 #'
 #' @authors António Proença-Ferreira, \email{antoniomiguelpferreira@@gmail.com}
