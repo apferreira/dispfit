@@ -80,7 +80,7 @@ lognorm.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
   skewness.lognorm <- (exp(dist.lognorm.opt$par[2]^2)+2) * sqrt(exp(dist.lognorm.opt$par[2]^2)-1)
   skewness.stderr.lognorm <- msm::deltamethod(~ (exp(x2^2)+2) * sqrt(exp(x2^2)-1), mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)) )
   # kurtosis
-  kurtosis.lognorm <- exp(4*dist.lognorm.opt$par[2]^2) + 2*exp(3*dist.lognorm.opt$par[2]^2) + 3*exp(2*dist.lognorm.opt$par[2]^2) - 6
+  kurtosis.lognorm <- exp(dist.lognorm.opt$par[2]^2)^4 + 2 * exp(dist.lognorm.opt$par[2]^2)^3 + 3 * exp(dist.lognorm.opt$par[2]^2)^2 - 3
   kurtosis.stderr.lognorm <- msm::deltamethod(~ exp(4*x2^2) + 2*exp(3*x2^2) + 3*exp(2*x2^2) - 6, mean = dist.lognorm.opt$par, cov = solve(numDeriv::hessian(log.dist.lognorm, x=dist.lognorm.opt$par, r=data)) )
   # output
   res <- data.frame(aic.lognorm, aicc.lognorm, bic.lognorm,

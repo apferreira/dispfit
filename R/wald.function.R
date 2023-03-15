@@ -3,7 +3,7 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     a <- par[1] ## location parameter, mean
     b <- par[2] ## scale parameter
     if(a < 0 || b < 0) return(Inf)
-    
+
     fwald <- (sqrt(b)/sqrt(8 * (pi^3) * (r^5))) * exp(-(b * ((r - a)^2))/(2 * (a^2) * r))
     # we prevent Inf by replacing zeroes with the machine minimum
     fwald[fwald == 0] <- .Machine$double.xmin
@@ -54,23 +54,23 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   #   KS.wald <- "Accept"
   # } else {KS.wald <- "Reject"}
 
- CI <- confint.dispfit(dist.opt, log.dist.wald, data=data, lower=c(1e-6, 1e-6), upper=list(10000, 10000), confidence.level=confidence.level)  
- 
+ CI <- confint.dispfit(dist.opt, log.dist.wald, data=data, lower=c(1e-6, 1e-6), upper=list(10000, 10000), confidence.level=confidence.level)
+
   # mean dispersal distance
   mean.wald <- dist.opt$par[1]
   par.1.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data))))[1]
   mean.stderr.wald <- par.1.se.wald
   # variance
-  variance.wald <- dist.opt$par[1]^3/dist.opt$par[2]
+  variance.wald <- (dist.wald.opt$par[1]^3)/dist.wald.opt$par[2]
   variance.stderr.wald <- msm::deltamethod(~ x1^3/x2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # standard deviation
-  stdev.wald <- sqrt(dist.opt$par[1]^3/dist.opt$par[2])
+  stdev.wald <- sqrt((dist.wald.opt$par[1]^3)/dist.wald.opt$par[2])
   stdev.stderr.wald <- msm::deltamethod(~ sqrt(x1^3/x2), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # skewness
   skewness.wald <- 3 * sqrt((dist.opt$par[1]*dist.opt$par[2]))
   skewness.stderr.wald <- msm::deltamethod(~ 3 * sqrt((x1*x2)), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # kurtosis
-  kurtosis.wald <- (15*dist.opt$par[1])/dist.opt$par[2]
+  kurtosis.wald <- ((15*dist.wald.opt$par[1])/dist.wald.opt$par[2])+3
   kurtosis.stderr.wald <- msm::deltamethod(~ (15*x1)/x2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # output
   res <- data.frame(aic.wald, aicc.wald, bic.wald,

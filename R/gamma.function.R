@@ -3,7 +3,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     a <- par[1] ## scale
     b <- par[2] ## shape
     if(a < 0 || b < 0) return(Inf)
-    
+
     fgamma <- (1 / (2 * pi * (a^2) * gamma(b))) * ((r/a)^(b-2)) * exp(-r/a)
     fgamma[fgamma == 0] <- .Machine$double.xmin
     -sum(log(fgamma)) ## Negative Log Likelihood
@@ -58,7 +58,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     min(169, (2 * log(max(data) / pars[1]) + log(.Machine$double.xmax)) / log(max(data) / pars[1]))
   }
   CI <- confint.dispfit(dist.opt, log.dist.gamma, data=data, lower=c(1e-6, 1e-6), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
-  
+
   # mean dispersal distance
   mean.gamma <- dist.opt$par[1] * dist.opt$par[2]
   mean.stderr.gamma <- msm::deltamethod(~ x1 * x2,
@@ -75,7 +75,7 @@ gamma.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
                                          mean = dist.opt$par,
                                          cov = solve(numDeriv::hessian(log.dist.gamma, x=dist.opt$par, r=data)) )
   # skewness
-  skewness.gamma <- 2/sqrt(dist.opt$par[2])
+  skewness.gamma <- 2/sqrt(dist.opt$par[2]) + 3
   skewness.stderr.gamma <- msm::deltamethod(~ 2/sqrt(x2),
                                             mean = dist.opt$par,
                                             cov = solve(numDeriv::hessian(log.dist.gamma, x=dist.opt$par, r=data)) )

@@ -2,7 +2,7 @@ weibull.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
   log.dist.weibull <- function (r, par) {
     a <- par[1] ## scale
     b <- par[2] ## shape
-    
+
     if(a < 0 || b < 0) return(Inf)
     fw <- (b/(2*pi*a^b)) * (r^(b-2)) * exp(-(r^b/a^b)) ## function from Austerlitz 2004
     -sum(log(fw)) ##
@@ -54,15 +54,15 @@ weibull.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
   #   KS.weibull <- "Accept"
   # } else {KS.weibull <- "Reject"}
 
-	
+
   # Confidence intervals
-  # upper limit of b depends on data and on a  
+  # upper limit of b depends on data and on a
   par2.upper.limit <- function(pars, data) {
   	min(log(-log(.Machine$double.xmin))/log(max(data)/pars[1]), (2*log(max(data))+log(.Machine$double.xmax))/log(max(data)))
   }
-  
+
   CI <- confint.dispfit(dist.opt, log.dist.weibull, data=data, lower=c(1e-6, 1e-6), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
-  
+
   # mean dispersal distance ## from Austerlitz 2004
   mean.weibull <- dist.opt$par[1] * (gamma(1 + 1/dist.opt$par[2]))
   mean.stderr.weibull <- msm::deltamethod(~ x1 * (gamma(1 + 1/x2)), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.opt$par, r=data)) )
@@ -80,7 +80,7 @@ weibull.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
                                               mean = dist.opt$par,
                                               cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.opt$par, r=data)) )
   # kurtosis
-  kurtosis.weibull <- (dist.opt$par[1]^4*gamma(1+4/dist.opt$par[2])-4*skewness.weibull*variance.weibull^(3/2)*mean.weibull-6*variance.weibull*mean.weibull^2-mean.weibull^4)/variance.weibull^2-3
+  kurtosis.weibull <- (dist.weibull.opt$par[1]^4*gamma(1+4/dist.weibull.opt$par[2])-4*skewness.weibull*variance.weibull^(3/2)*mean.weibull-6*variance.weibull*mean.weibull^2-mean.weibull^4)/variance.weibull^2
   kurtosis.stderr.weibull <- msm::deltamethod(~ (x1^4*gamma(1+4/x2) - 4 * ((x1^3*gamma(1+3/x2)-3*(x1 * (gamma(1 + 1/x2)))*(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))-(x1 * (gamma(1 + 1/x2)))^3)/(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^(3/2)) * (x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^(3/2) * (x1 * (gamma(1 + 1/x2))) - 6 * (x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2)) * (x1 * (gamma(1 + 1/x2)))^2 - (x1 * (gamma(1 + 1/x2)))^4) / (x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^2-3,
                                               mean = dist.opt$par,
                                               cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.opt$par, r=data)) )

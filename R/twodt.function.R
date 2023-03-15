@@ -3,7 +3,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     a <- par[1] ## scale parameter
     b <- par[2] ## shape parameter
     if(a < 0 || b < 1) return(Inf)
-    
+
     f2dt <- ((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
 
     if(any(is.nan(f2dt)) || any(f2dt < 0))
@@ -15,7 +15,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
     f2dt <- 2*pi*r*((b-1) / (pi*(a^2))) * ((1 + (r^2)/(a^2))^(-b))
   }
   # initial values estimation
- 
+
     dist.opt <- optim (par = c(1, 1.000001), ## valor inicial para o "a"
                            fn = log.dist.2dt, ## função a minimizar
                            r = data,
@@ -63,50 +63,50 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   par2.upper.limit <- function(pars, data) {
 	-log(.Machine$double.xmin) / log(1 + (max(data)^2)/(pars[1]^2))
   }
-  
+
   CI <- confint.dispfit(dist.opt, log.dist.2dt, data=data, lower=c(1e-6, 1 + 1e-6), upper=list(100000, par2.upper.limit), confidence.level=confidence.level)
 
   # mean dispersal distance
   if (dist.opt$par[2] >= 3/2) {
-    mean.2dt <- dist.opt$par[1] * (sqrt(pi)/2) * (exp(lgamma(dist.opt$par[2]-(3/2))-lgamma(dist.opt$par[2]-1)))
-    mean.stderr.2dt <- msm::deltamethod(~ x1 * (sqrt(pi)/2)*(exp(lgamma(x2-(3/2))-lgamma(x2-1))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
+    mean.2dt <- dist.2dt.opt$par[1] * (sqrt(pi)/2) * (gamma(dist.2dt.opt$par[2]-(3/2))/gamma(dist.2dt.opt$par[2]-1))
+    #mean.stderr.2dt <- msm::deltamethod(~ x1 * (sqrt(pi)/2)*(exp(lgamma(x2-(3/2))-lgamma(x2-1))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
     mean.2dt <- Inf
-    mean.stderr.2dt <- Inf
+   # mean.stderr.2dt <- Inf
   }
 
-  if (dist.opt$par[2] > 2) {
+  if (dist.opt$par[2] > 3) {
   # variance
-    variance.2dt <- dist.opt$par[1] * sqrt(1/(dist.opt$par[2]-2))
-    variance.stderr.2dt <- msm::deltamethod(~ x1 * sqrt(1/(x2-2)), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
+    variance.2dt <- (a^2)/(b-2) + ((a^2)*pi*gamma(b-3/2)^2)/(4*gamma(b-1)^2) + (a * sqrt(pi) * gamma(b-3)/(2*gamma(b-1)))
+    #variance.stderr.2dt <- msm::deltamethod(~ x1 * sqrt(1/(x2-2)), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   # standard deviation
-    stdev.2dt <- sqrt(dist.opt$par[1] * sqrt(1/(dist.opt$par[2]-2)))
-    stdev.stderr.2dt <- msm::deltamethod(~ sqrt(x1 * sqrt(1/(x2-2))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
+    stdev.2dt <- sqrt((a^2)/(b-2) + ((a^2)*pi*gamma(b-3/2)^2)/(4*gamma(b-1)^2) + (a * sqrt(pi) * gamma(b-3)/(2*gamma(b-1))))
+    #stdev.stderr.2dt <- msm::deltamethod(~ sqrt(x1 * sqrt(1/(x2-2))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
     variance.2dt <- Inf
-    variance.stderr.2dt <- Inf
+    #variance.stderr.2dt <- Inf
     stdev.2dt <- Inf
-    stdev.stderr.2dt <- Inf
+    #stdev.stderr.2dt <- Inf
   }
 
   # skewness
-  if (2*(dist.opt$par[2]-1) > 2.5) {
-    skewness.2dt <- (dist.opt$par[1]*(gamma(2.5) * exp(lgamma(dist.opt$par[2]-2.5) - lgamma(dist.opt$par[2]-1)))^(1/3))
-    skewness.stderr.2dt <- msm::deltamethod(~ x1 * (gamma(2.5) * exp(lgamma(x2-2.5) - lgamma(x2-1)))^(1/3), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
+  if ((dist.2dt.opt$par[2]) > 5/2) {
+    skewness.2dt <- (3/4*sqrt(pi)*a^3*gamma(b-5/2)/gamma(b-1))/stdev.2dt^3
+    #skewness.stderr.2dt <- msm::deltamethod(~ x1 * (gamma(2.5) * exp(lgamma(x2-2.5) - lgamma(x2-1)))^(1/3), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
     skewness.2dt <- Inf
-    skewness.stderr.2dt <- Inf
+    #skewness.stderr.2dt <- Inf
   }
 
   # kurtosis
   if (2*(dist.opt$par[2]-1) > 3) {
-    kurtosis.2dt <- 2^(1/4) * dist.opt$par[1] * (1/((dist.opt$par[2] - 3) * (dist.opt$par[2] - 2)))^(1/4)
-    kurtosis.stderr.2dt <- msm::deltamethod(~ 2^(1/4) * x1 * (1/((x2 - 3) * (x2 - 2)))^(1/4),
-                                            mean = dist.opt$par,
-                                            cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
+    kurtosis.2dt <- (2*a^4*gamma(b-3)/gamma(b-1))/stdev.2dt^4
+    #kurtosis.stderr.2dt <- msm::deltamethod(~ 2^(1/4) * x1 * (1/((x2 - 3) * (x2 - 2)))^(1/4),
+    #                                        mean = dist.opt$par,
+    #                                        cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
     kurtosis.2dt <- Inf
-    kurtosis.stderr.2dt <- Inf
+    #kurtosis.stderr.2dt <- Inf
   }
 
   # output

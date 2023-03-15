@@ -2,7 +2,7 @@ rayleigh.function <- function (data, chi.res.hist, ks.res.hist, confidence.level
   log.dist.rayleigh <- function (par, r) {
 	a <- par[1]
 	if(a < 0) return(Inf)
-	
+
     fg <-(1/(pi*a^2)) * exp(-r^2/a^2) ## Rayleigh, as defined in Nathan 2012
     -sum(log(fg)) ## Negative Log Likelihood
   }
@@ -42,7 +42,7 @@ rayleigh.function <- function (data, chi.res.hist, ks.res.hist, confidence.level
   ks.p.rayleigh <- as.numeric(ks.rayleigh$p.value)
 
   CI <- confint.dispfit(dist.opt, log.dist.rayleigh, data=data, lower=c(1e-6), upper=list(100000), confidence.level=confidence.level)
-  
+
   # mean
   mean.rayleigh <- dist.opt$par*sqrt(pi)/2
   mean.stderr.rayleigh <- msm::deltamethod(~ x1 * sqrt(pi) / 2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.opt$par, r=data)))
@@ -53,10 +53,10 @@ rayleigh.function <- function (data, chi.res.hist, ks.res.hist, confidence.level
   stdev.rayleigh <- sqrt(((4-pi)*(dist.opt$par^2))/4)
   stdev.stderr.rayleigh <- msm::deltamethod(~ sqrt(((4-pi)*(x1^2))/4), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.opt$par, r=data)))
   # skewness
-  skewness.rayleigh <- ((3*sqrt(pi)*dist.opt$par^3)/4)/variance.rayleigh^(3/2)
+  skewness.rayleigh <- (2*sqrt(pi) * (pi-3)) / ((4 - pi)^(3/2))
   skewness.stderr.rayleigh <- msm::deltamethod(~ (( (3*sqrt(pi)*x1^3) /4)) / (( (4-pi) * (x1^2) )/4)^(3/2), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.opt$par, r=data)))
   # kurtosis
-  kurtosis.rayleigh <- (2*dist.opt$par^4)/variance.rayleigh^2
+  kurtosis.rayleigh <- -(6*pi^2-24*pi+16)/(4-pi)^(3/2)
   kurtosis.stderr.rayleigh <- msm::deltamethod(~ (2*x1^4) / (( (4-pi) * (x1^2) )/4)^(2), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.rayleigh, x=dist.opt$par, r=data)))
   # output
   res <- data.frame(aic.rayleigh, aicc.rayleigh, bic.rayleigh,

@@ -49,23 +49,23 @@ exponential.function <- function (data, chi.res.hist, ks.res.hist, confidence.le
   # if (g.max.exponential < (sqrt(-log(0.01/2)/(2*length(cumulative.data))) * (1/(2*length(cumulative.data))))) {
   #   KS.exponential <- "Accept"
   # } else {KS.exponential <- "Reject"}
-  
+
   CI <- confint.dispfit(dist.opt, log.dist.exponential, data=data, lower=c(1e-6), upper=list(100000), confidence.level=confidence.level)
-  
+
   # mean dispersal distance
-  mean.exponential <- dist.opt$par
+  mean.exponential <- dist.exponential.opt$par*2
   mean.stderr.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.opt$par, r=data))))
   # variance
-  variance.exponential <- dist.opt$par^2
+  variance.exponential <- 2*dist.exponential.opt$par^2
   variance.stderr.exponential <- msm::deltamethod(~ x1^2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.exponential, x=dist.opt$par, r=data)))
   # standard deviation
   stdev.exponential <- dist.opt$par
   stdev.stderr.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.opt$par, r=data))))
   # skewness
-  skewness.exponential <- 6
+  skewness.exponential <- 6 * sqrt(2)
   skewness.stderr.exponential <- NA
   # kurtosis
-  kurtosis.exponential <- 24
+  kurtosis.exponential <- 30
   kurtosis.stderr.exponential <- NA
   # output
   res <- data.frame(aic.exponential, aicc.exponential, bic.exponential,
