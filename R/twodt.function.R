@@ -68,7 +68,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
 
   # mean dispersal distance
   if (dist.opt$par[2] >= 3/2) {
-    mean.2dt <- dist.2dt.opt$par[1] * (sqrt(pi)/2) * (gamma(dist.2dt.opt$par[2]-(3/2))/gamma(dist.2dt.opt$par[2]-1))
+    mean.2dt <- dist.opt$par[1] * (sqrt(pi)/2) * (gamma(dist.opt$par[2]-(3/2))/gamma(dist.opt$par[2]-1))
     mean.stderr.2dt <- msm::deltamethod(~ x1 * (sqrt(pi)/2)*(exp(lgamma(x2-(3/2))-lgamma(x2-1))), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
     mean.2dt <- Inf
@@ -90,7 +90,7 @@ twodt.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   }
 
   # skewness
-  if ((dist.2dt.opt$par[2]) > 5/2) {
+  if ((dist.opt$par[2]) > 5/2) {
     skewness.2dt <- (3/4*sqrt(pi)*a^3*gamma(b-5/2)/gamma(b-1))/stdev.2dt^3
     skewness.stderr.2dt <- msm::deltamethod(~ x1 * (gamma(2.5) * exp(lgamma(x2-2.5) - lgamma(x2-1)))^(1/3), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.2dt, x=dist.opt$par, r=data)) )
   } else {
