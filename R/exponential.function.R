@@ -53,10 +53,10 @@ exponential.function <- function (data, chi.res.hist, ks.res.hist, confidence.le
   CI <- confint.dispfit(dist.opt, log.dist.exponential, data=data, lower=c(1e-6), upper=list(100000), confidence.level=confidence.level)
 
   # mean dispersal distance
-  mean.exponential <- dist.exponential.opt$par*2
+  mean.exponential <- dist.opt$par*2
   mean.stderr.exponential <- sqrt(diag(solve(numDeriv::hessian(log.dist.exponential, x=dist.opt$par, r=data))))
   # variance
-  variance.exponential <- 2*dist.exponential.opt$par^2
+  variance.exponential <- 2*dist.opt$par^2
   variance.stderr.exponential <- msm::deltamethod(~ x1^2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.exponential, x=dist.opt$par, r=data)))
   # standard deviation
   stdev.exponential <- dist.opt$par
