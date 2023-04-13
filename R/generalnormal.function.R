@@ -102,11 +102,11 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
 
   # mean dispersal distance
   mean.generalnormal <- dist.opt$par[1] * (gamma(3/dist.opt$par[2])/gamma(2/dist.opt$par[2]))
-  # mean.stderr.generalnormal <- msm::deltamethod(~ x1 * (gamma(3/x2)/gamma(2/x2)),
-  #                                               mean = dist.opt$par,
-  #                                               cov = solve(numDeriv::hessian(log.dist.generalnormal,
-  #                                                                             x=dist.opt$par,
-  #                                                                             r=data)) )
+  mean.stderr.generalnormal <- msm::deltamethod(~ x1 * (gamma(3/x2)/gamma(2/x2)),
+                                                mean = dist.opt$par,
+                                                cov = solve(numDeriv::hessian(log.dist.generalnormal,
+                                                                              x=dist.opt$par,
+                                                                              r=data)) )
   # variance
   variance.generalnormal <- (dist.opt$par[1]^2 *gamma(4/dist.opt$par[2])) / gamma(2/dist.opt$par[2]) - mean.generalnormal^2
   # variance.stderr.generalnormal <- msm::deltamethod(~ (x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2,
@@ -116,27 +116,27 @@ generalnormal.function <- function (data, chi.res.hist, ks.res.hist, confidence.
   #                                                                                 r=data)) )
   # standard deviation
   stdev.generalnormal <- sqrt((dist.opt$par[1]^2 *gamma(4/dist.opt$par[2])) / gamma(2/dist.opt$par[2]) - mean.generalnormal^2)
-  # stdev.stderr.generalnormal <- msm::deltamethod(~ sqrt((x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2),
-  #                                                mean = dist.opt$par,
-  #                                                cov = solve(numDeriv::hessian(log.dist.generalnormal,
-  #                                                                              x=dist.opt$par,
-  #                                                                              r=data)) )
+  stdev.stderr.generalnormal <- msm::deltamethod(~ sqrt((x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2),
+                                                 mean = dist.opt$par,
+                                                 cov = solve(numDeriv::hessian(log.dist.generalnormal,
+                                                                               x=dist.opt$par,
+                                                                               r=data)) )
   # skewness
   skewness.generalnormal <- ((dist.opt$par[1]^3 * gamma(5/dist.opt$par[2])) / gamma(2/dist.opt$par[2])) / (variance.generalnormal^(3/2))
-  # skewness.stderr.generalnormal <- msm::deltamethod(~ ((x1^3 * gamma(5/x2)) / gamma(2/x2)) / ((x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2)^(3/2),
-  #                                                   mean = dist.opt$par,
-  #                                                   cov = solve(numDeriv::hessian(log.dist.generalnormal,
-  #                                                                                 x=dist.opt$par,
-  #                                                                                 r=data)) )
+  skewness.stderr.generalnormal <- msm::deltamethod(~ ((x1^3 * gamma(5/x2)) / gamma(2/x2)) / ((x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2)^(3/2),
+                                                    mean = dist.opt$par,
+                                                    cov = solve(numDeriv::hessian(log.dist.generalnormal,
+                                                                                  x=dist.opt$par,
+                                                                                  r=data)) )
   # kurtosis
   kurtosis.generalnormal <- ((dist.opt$par[1]^4 * gamma(6/dist.opt$par[2])) / gamma(2/dist.opt$par[2])) / (variance.generalnormal^2)
   # (gamma(6/dist.opt$par[2]) * gamma(2/dist.opt$par[2])) / (gamma(4/dist.opt$par[2])^2)
   # ((dist.opt$par[1]^4 * gamma(6/dist.opt$par[2])) / gamma(2/dist.opt$par[2])) / ((dist.opt$par[1]^2 *gamma(4/dist.opt$par[2])) / gamma(2/dist.opt$par[2]))^2
-  # kurtosis.stderr.generalnormal <- msm::deltamethod(~ ((x1^4 * gamma(6/x2)) / gamma(2/x2)) / ((x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2)^2,
-  #                                                   mean = dist.opt$par,
-  #                                                   cov = solve(numDeriv::hessian(log.dist.generalnormal,
-  #                                                                                 x=dist.opt$par,
-  #                                                                                 r=data)) )
+  kurtosis.stderr.generalnormal <- msm::deltamethod(~ ((x1^4 * gamma(6/x2)) / gamma(2/x2)) / ((x1^2 *gamma(4/x2)) / gamma(2/x2) - (x1 * (gamma(3/x2)/gamma(2/x2)))^2)^2,
+                                                    mean = dist.opt$par,
+                                                    cov = solve(numDeriv::hessian(log.dist.generalnormal,
+                                                                                  x=dist.opt$par,
+                                                                                  r=data)) )
   # output
   res <- data.frame(aic.generalnormal, aicc.generalnormal, bic.generalnormal,
                     chi.squared.statistic.generalnormal, chi.squared.pvalue.generalnormal,g.max.generalnormal, KS.generalnormal,
