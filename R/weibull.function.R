@@ -80,7 +80,7 @@ weibull.function <- function (data, chi.res.hist, ks.res.hist, confidence.level)
                                               mean = dist.opt$par,
                                               cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.opt$par, r=data)) )
   # kurtosis
-  kurtosis.weibull <- (dist.weibull.opt$par[1]^4*gamma(1+4/dist.weibull.opt$par[2])-4*skewness.weibull*variance.weibull^(3/2)*mean.weibull-6*variance.weibull*mean.weibull^2-mean.weibull^4)/variance.weibull^2
+  kurtosis.weibull <- (dist.opt$par[1]^4*gamma(1+4/dist.opt$par[2])-4*skewness.weibull*variance.weibull^(3/2)*mean.weibull-6*variance.weibull*mean.weibull^2-mean.weibull^4)/variance.weibull^2
   kurtosis.stderr.weibull <- msm::deltamethod(~ (x1^4*gamma(1+4/x2) - 4 * ((x1^3*gamma(1+3/x2)-3*(x1 * (gamma(1 + 1/x2)))*(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))-(x1 * (gamma(1 + 1/x2)))^3)/(x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^(3/2)) * (x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^(3/2) * (x1 * (gamma(1 + 1/x2))) - 6 * (x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2)) * (x1 * (gamma(1 + 1/x2)))^2 - (x1 * (gamma(1 + 1/x2)))^4) / (x1^2*(gamma(1+2/x2)-gamma(1+1/x2)^2))^2-3,
                                               mean = dist.opt$par,
                                               cov = solve(numDeriv::hessian(log.dist.weibull, x=dist.opt$par, r=data)) )

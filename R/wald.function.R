@@ -61,16 +61,16 @@ wald.function <- function (data, chi.res.hist, ks.res.hist, confidence.level) {
   par.1.se.wald <- sqrt(diag(solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data))))[1]
   mean.stderr.wald <- par.1.se.wald
   # variance
-  variance.wald <- (dist.wald.opt$par[1]^3)/dist.wald.opt$par[2]
+  variance.wald <- (dist.opt$par[1]^3)/dist.opt$par[2]
   variance.stderr.wald <- msm::deltamethod(~ x1^3/x2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # standard deviation
-  stdev.wald <- sqrt((dist.wald.opt$par[1]^3)/dist.wald.opt$par[2])
+  stdev.wald <- sqrt((dist.opt$par[1]^3)/dist.opt$par[2])
   stdev.stderr.wald <- msm::deltamethod(~ sqrt(x1^3/x2), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # skewness
   skewness.wald <- 3 * sqrt((dist.opt$par[1]*dist.opt$par[2]))
   skewness.stderr.wald <- msm::deltamethod(~ 3 * sqrt((x1*x2)), mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # kurtosis
-  kurtosis.wald <- ((15*dist.wald.opt$par[1])/dist.wald.opt$par[2])+3
+  kurtosis.wald <- ((15*dist.opt$par[1])/dist.opt$par[2])+3
   kurtosis.stderr.wald <- msm::deltamethod(~ (15*x1)/x2, mean = dist.opt$par, cov = solve(numDeriv::hessian(log.dist.wald, x=dist.opt$par, r=data)) )
   # output
   res <- data.frame(aic.wald, aicc.wald, bic.wald,
